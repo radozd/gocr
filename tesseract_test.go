@@ -1,9 +1,10 @@
-package tesseract
+package gocr
 
 import (
 	"testing"
 
 	"github.com/radozd/gocr/leptonica"
+	"github.com/radozd/gocr/tesseract"
 )
 
 func TestOcr(t *testing.T) {
@@ -13,10 +14,10 @@ func TestOcr(t *testing.T) {
 	}
 	defer leptonica.DestroyPix(pix)
 
-	tess := NewApi("fra")
+	tess := tesseract.NewApi("fra")
 	defer tess.Close()
 
-	tess.SetPageSegMode(1) // PSM_AUTO_OSD = Automatic page segmentation with orientation and script detection. (OSD)
+	tess.SetPageSegMode(tesseract.PSM_AUTO)
 	tess.SetVariable("preserve_interword_spaces", "1")
 
 	tess.SetImagePix(pix)
@@ -30,11 +31,11 @@ func TestOcr(t *testing.T) {
 
 	good := true
 	for good {
-		if pageIt.IsAtBeginningOf(RIL_BLOCK) {
-			text, goodness := resIt.GetUTF8Text(RIL_BLOCK)
+		if pageIt.IsAtBeginningOf(tesseract.RIL_BLOCK) {
+			text, goodness := resIt.GetUTF8Text(tesseract.RIL_BLOCK)
 			t.Log(text, goodness, "\n")
 		}
 
-		good = pageIt.Next(RIL_BLOCK)
+		good = pageIt.Next(tesseract.RIL_BLOCK)
 	}
 }

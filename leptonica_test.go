@@ -1,22 +1,24 @@
-package leptonica
+package gocr
 
 import (
 	"fmt"
 	"os"
 	"testing"
+
+	"github.com/radozd/gocr/leptonica"
 )
 
 func TestConvertGrey(t *testing.T) {
-	pix := NewPixFromFile("test.png")
+	pix := leptonica.NewPixFromFile("test.png")
 	if pix == 0 {
 		t.Error("error loading pix from file")
 	}
-	defer DestroyPix(pix)
+	defer leptonica.DestroyPix(pix)
 
-	w, h, d := GetPixDimensions(pix)
+	w, h, d := leptonica.GetPixDimensions(pix)
 	t.Log("img:", w, h, d)
 
-	gray := GetRawGrayData(pix)
+	gray := leptonica.GetRawGrayData(pix)
 	if gray == nil {
 		t.Error("error loading pix")
 	}
