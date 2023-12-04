@@ -12,7 +12,7 @@ func TestOcr(t *testing.T) {
 	if pix == 0 {
 		t.Error("error loading pix")
 	}
-	defer leptonica.DestroyPix(pix)
+	defer pix.Destroy()
 
 	tess := tesseract.NewApi("fra")
 	defer tess.Close()

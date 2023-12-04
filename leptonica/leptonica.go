@@ -23,11 +23,11 @@ func NewPixFromMem(image *[]byte) Pix {
 	return Pix(pix)
 }
 
-func DestroyPix(pix Pix) {
+func (pix Pix) Destroy() {
 	pixDestroy.Call(uintptr(unsafe.Pointer(&pix)))
 }
 
-func GetPixDimensions(pix Pix) (int, int, int) {
+func (pix Pix) GetDimensions() (int, int, int) {
 	cW := C.int(0)
 	cH := C.int(0)
 	cD := C.int(0)
@@ -38,20 +38,15 @@ func GetPixDimensions(pix Pix) (int, int, int) {
 	return int(cW), int(cH), int(cD)
 }
 
-func Rotate180(pixs Pix) Pix {
-	pix, _, _ := pixRotate180.Call(uintptr(0), uintptr(pixs))
-	return Pix(pix)
+func (pix Pix) GetRotated180Copy() Pix {
+	pix180, _, _ := pixRotate180.Call(uintptr(0), uintptr(pix))
+	return Pix(pix180)
 }
 
-func ConvertRGBToGrayFast(pixs Pix) Pix {
-	pix, _, _ := pixConvertRGBToGrayFast.Call(uintptr(pixs))
-	return Pix(pix)
-}
-
-func GetRawGrayData(pix Pix) []byte {
+func (pix Pix) GetRawGrayData() []byte {
 	var gray uintptr
 
-	_, _, d := GetPixDimensions(pix)
+	_, _, d := pix.GetDimensions()
 	if d == 32 {
 		gray, _, _ = pixConvertRGBToGrayFast.Call(uintptr(pix))
 	} else if d != 8 {
@@ -62,13 +57,15 @@ func GetRawGrayData(pix Pix) []byte {
 	if gray == 0 {
 		return nil
 	}
+	grayPix := Pix(gray)
+
 	defer func() {
-		if gray != uintptr(pix) {
-			DestroyPix(Pix(gray))
+		if uintptr(grayPix) != uintptr(pix) {
+			grayPix.Destroy()
 		}
 	}()
 
-	w, h, _ := GetPixDimensions(Pix(gray))
+	w, h, _ := grayPix.GetDimensions()
 	wpl, _, _ := pixGetWpl.Call(gray)
 	raw, _, _ := pixGetData.Call(gray)
 

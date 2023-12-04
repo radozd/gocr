@@ -11,9 +11,7 @@ import (
 )
 
 type Api struct {
-	handle    uintptr
-	pixWidth  int
-	pixHeight int
+	handle uintptr
 }
 
 type ResultIterator uintptr
@@ -82,8 +80,6 @@ func (api *Api) Close() {
 	tessBaseAPIEnd.Call(api.handle)
 	tessDelete.Call(api.handle)
 	api.handle = 0
-	api.pixWidth = 0
-	api.pixHeight = 0
 }
 
 func (api *Api) SetVariable(name string, val string) {
@@ -98,16 +94,6 @@ func (api *Api) SetVariable(name string, val string) {
 
 func (api *Api) SetImagePix(pix leptonica.Pix) {
 	tessSetImage2.Call(api.handle, uintptr(pix))
-
-	api.pixWidth, api.pixHeight, _ = leptonica.GetPixDimensions(pix)
-}
-
-func (api *Api) GetPixWidth() int {
-	return api.pixWidth
-}
-
-func (api *Api) GetPixHeight() int {
-	return api.pixHeight
 }
 
 func (api *Api) SetPageSegMode(mode PageSegMode) {

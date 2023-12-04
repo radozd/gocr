@@ -12,7 +12,7 @@ func TestZBar(t *testing.T) {
 	if pix == 0 {
 		t.Error("error loading pix from file")
 	}
-	defer leptonica.DestroyPix(pix)
+	defer pix.Destroy()
 
 	codes := zbar.Process(pix)
 	if len(codes) == 0 {

@@ -13,12 +13,12 @@ func TestConvertGrey(t *testing.T) {
 	if pix == 0 {
 		t.Error("error loading pix from file")
 	}
-	defer leptonica.DestroyPix(pix)
+	defer pix.Destroy()
 
-	w, h, d := leptonica.GetPixDimensions(pix)
+	w, h, d := pix.GetDimensions()
 	t.Log("img:", w, h, d)
 
-	gray := leptonica.GetRawGrayData(pix)
+	gray := pix.GetRawGrayData()
 	if gray == nil {
 		t.Error("error loading pix")
 	}

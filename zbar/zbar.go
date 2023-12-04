@@ -21,8 +21,8 @@ type Code struct {
 }
 
 func Process(pix leptonica.Pix) []Code {
-	w, h, _ := leptonica.GetPixDimensions(pix)
-	gray := leptonica.GetRawGrayData(pix)
+	w, h, _ := pix.GetDimensions()
+	gray := pix.GetRawGrayData()
 
 	raw := unsafe.SliceData(gray)
 	img := newImage(w, h, uintptr(unsafe.Pointer(raw)), len(gray))
