@@ -2,7 +2,6 @@ package zbar
 
 // #include <stdlib.h>
 import "C"
-import "log"
 
 type scanner uintptr
 
@@ -17,12 +16,11 @@ func newScanner() scanner {
 }
 
 func (scn scanner) setConfig(symbology int, config int, value int) {
-	zbar_image_scanner_set_config.Call(uintptr(scn), uintptr(C.int(symbology)), uintptr(C.int(config)), uintptr(C.int(value)))
+	zbar_image_scanner_set_config.Call(uintptr(scn), uintptr(symbology), uintptr(config), uintptr(value))
 }
 
 func (scn scanner) scan(img image) bool {
 	res, _, _ := zbar_scan_image.Call(uintptr(scn), uintptr(img))
-	log.Print("scan = ", res)
 	return res > 0
 }
 

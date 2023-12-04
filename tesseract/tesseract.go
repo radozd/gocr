@@ -125,7 +125,7 @@ func (api *Api) Text() string {
 
 // HOCRText returns the HOCR text for given pagenumber
 func (api *Api) HOCRText(pagenumber int) string {
-	text, _, _ := tessGetHOCRText.Call(api.handle, uintptr(C.int(pagenumber)))
+	text, _, _ := tessGetHOCRText.Call(api.handle, uintptr(pagenumber))
 	if text == 0 {
 		return ""
 	}

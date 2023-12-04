@@ -21,8 +21,17 @@ type Code struct {
 }
 
 func Process(pix leptonica.Pix) []Code {
+	codes := make([]Code, 0)
+
 	w, h, _ := pix.GetDimensions()
+	if w == 0 || h == 0 {
+		return codes
+	}
+
 	gray := pix.GetRawGrayData()
+	if len(gray) == 0 {
+		return codes
+	}
 
 	raw := unsafe.SliceData(gray)
 	img := newImage(w, h, uintptr(unsafe.Pointer(raw)), len(gray))
@@ -31,7 +40,6 @@ func Process(pix leptonica.Pix) []Code {
 	scanner := newScanner()
 	defer scanner.destroy()
 
-	codes := make([]Code, 0)
 	if !scanner.scan(img) {
 		return codes
 	}

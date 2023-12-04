@@ -8,17 +8,11 @@ type symbol uintptr
 
 func (img image) first() symbol {
 	sym, _, _ := zbar_image_first_symbol.Call(uintptr(img))
-	if sym == 0 {
-		return 0
-	}
 	return symbol(sym)
 }
 
 func (sym symbol) next() symbol {
 	n, _, _ := zbar_symbol_next.Call(uintptr(sym))
-	if n == 0 {
-		return 0
-	}
 	return symbol(n)
 }
 
@@ -27,7 +21,6 @@ func (sym symbol) string() string {
 	if text == 0 {
 		return ""
 	}
-
 	return C.GoString((*C.char)(unsafe.Pointer(text)))
 }
 
@@ -52,8 +45,8 @@ func (sym symbol) symbol_type() ZBAR_CODETYPE {
 }
 
 func (sym symbol) get_rect() (int, int, int, int) {
-	x1 := 100000
-	y1 := 100000
+	x1 := 1000000
+	y1 := 1000000
 	x2 := 0
 	y2 := 0
 	for i := 0; i < sym.get_loc_size(); i++ {

@@ -10,9 +10,9 @@ func newImage(width int, height int, data uintptr, size int) image {
 	//defer C.free(unsafe.Pointer(cFormat))
 
 	img, _, _ := zbar_image_create.Call()
-	zbar_image_set_size.Call(img, uintptr(C.int(width)), uintptr(C.int(height)))
-	zbar_image_set_format.Call(img, uintptr(C.ulong(0x30303859))) // unsafe.Pointer(cFormat) C.zbar_image_set_format(ret.image, C.ulong(0x30303859)) // Y800 (grayscale)
-	zbar_image_set_data.Call(img, data, uintptr(C.int(size)), uintptr(0))
+	zbar_image_set_size.Call(img, uintptr(width), uintptr(height))
+	zbar_image_set_format.Call(img, uintptr(C.ulong(0x30303859))) // unsafe.Pointer(cFormat) // Y800 (grayscale)
+	zbar_image_set_data.Call(img, data, uintptr(size), uintptr(0))
 
 	return image(img)
 }
