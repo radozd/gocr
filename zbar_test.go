@@ -14,7 +14,10 @@ func TestZBar(t *testing.T) {
 	}
 	defer pix.Destroy()
 
-	codes := zbar.Process(pix)
+	scn := zbar.NewScanner()
+	defer scn.Destroy()
+
+	codes := scn.Process(pix)
 	if len(codes) == 0 {
 		t.Error("no codes were found")
 	}

@@ -1,11 +1,5 @@
 package zbar
 
-import (
-	"unsafe"
-
-	"github.com/radozd/gocr/leptonica"
-)
-
 type ZBAR_CODETYPE int
 
 const ZBAR_QRCODE ZBAR_CODETYPE = 64
@@ -18,34 +12,4 @@ type Code struct {
 	Y        int
 	Width    int
 	Height   int
-}
-
-func Process(pix leptonica.Pix) []Code {
-	codes := make([]Code, 0)
-
-	w, h, _ := pix.GetDimensions()
-	if w == 0 || h == 0 {
-		return codes
-	}
-
-	gray := pix.GetRawGrayData()
-	if len(gray) == 0 {
-		return codes
-	}
-
-	raw := unsafe.SliceData(gray)
-	img := newImage(w, h, uintptr(unsafe.Pointer(raw)), len(gray))
-	defer img.destroy()
-
-	scanner := newScanner()
-	defer scanner.destroy()
-
-	if !scanner.scan(img) {
-		return codes
-	}
-
-	img.first().each(func(code Code) {
-		codes = append(codes, code)
-	})
-	return codes
 }

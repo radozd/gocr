@@ -43,7 +43,8 @@ func (pix Pix) GetRotated180Copy() Pix {
 	return Pix(pix180)
 }
 
-func (pix Pix) GetRawGrayData() []byte {
+// TODO: flags for 32->8 convert methods
+func (pix Pix) GetGrayCopy() Pix {
 	var gray uintptr
 
 	_, _, d := pix.GetDimensions()
@@ -52,22 +53,22 @@ func (pix Pix) GetRawGrayData() []byte {
 	} else if d != 8 {
 		gray, _, _ = pixConvertTo8.Call(uintptr(pix), 0)
 	} else {
-		gray = uintptr(pix)
+		gray, _, _ = pixCopy.Call(uintptr(0), uintptr(pix))
 	}
+	return Pix(gray)
+}
+
+func (pix Pix) GetRawGrayData() []byte {
+	gray := pix.GetGrayCopy()
 	if gray == 0 {
 		return nil
 	}
-	grayPix := Pix(gray)
 
-	defer func() {
-		if uintptr(grayPix) != uintptr(pix) {
-			grayPix.Destroy()
-		}
-	}()
+	defer gray.Destroy()
 
-	w, h, _ := grayPix.GetDimensions()
-	wpl, _, _ := pixGetWpl.Call(gray)
-	raw, _, _ := pixGetData.Call(gray)
+	w, h, _ := gray.GetDimensions()
+	wpl, _, _ := pixGetWpl.Call(uintptr(gray))
+	raw, _, _ := pixGetData.Call(uintptr(gray))
 
 	rowlen := 4 * int(wpl)
 	pixels := unsafe.Slice((*byte)(unsafe.Pointer(raw)), rowlen*h)

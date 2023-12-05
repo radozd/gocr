@@ -20,7 +20,8 @@ var (
 	pixAddBorder = leptonicaDll.NewProc("pixAddBorder") // PIX * pixAddBorder ( PIX *pixs, l_int32 npix, l_uint32 val );
 
 	pixConvertRGBToGrayFast = leptonicaDll.NewProc("pixConvertRGBToGrayFast")
-	pixConvertTo8           = leptonicaDll.NewProc("pixConvertTo8") //(PIX     *pixs, l_int32  cmapflag)
+	pixConvertTo8           = leptonicaDll.NewProc("pixConvertTo8")
+	pixCopy                 = leptonicaDll.NewProc("pixCopy")
 
 	pixGetData       = leptonicaDll.NewProc("pixGetData")
 	pixGetDimensions = leptonicaDll.NewProc("pixGetDimensions")
