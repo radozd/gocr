@@ -64,14 +64,15 @@ const (
 	PSM_COUNT
 )
 
+var DataPath string = "."
+
 func NewApi(lang string) *Api {
 	api, _, _ := tessCreate.Call()
 	if api == 0 {
 		return nil
 	}
 
-	datapath := "./"
-	cDatapath := C.CString(datapath)
+	cDatapath := C.CString(DataPath)
 	defer C.free(unsafe.Pointer(cDatapath))
 
 	// Set the language
