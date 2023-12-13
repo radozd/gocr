@@ -59,13 +59,13 @@ func (pix Pix) GetGrayCopy(mode GrayCastMode) Pix {
 		gray, _, _ = pixConvertRGBToGrayFast.Call(uintptr(pix))
 		if mode != GRAY_SIMPLE {
 			mask, _, _ := pixMaskOverGrayPixels.Call(uintptr(pix), uintptr(255), 60)
+			defer Pix(mask).Destroy()
+
 			if mode == GRAY_CAST_REMOVE_COLORS {
 				//mask, _, _ = pixMaskOverColorPixels.Call(uintptr(pix), uintptr(50), uintptr(1))
 				pixInvert.Call(mask, mask)
 			}
-			defer Pix(mask).Destroy()
-
-			_, _, _ = pixPaintThroughMask.Call(gray, mask, uintptr(0), uintptr(0), uintptr(255))
+			_, _, _ = pixPaintThroughMask.Call(gray, mask, uintptr(0), uintptr(0), uintptr(250))
 		}
 	} else if d != 8 {
 		gray, _, _ = pixConvertTo8.Call(uintptr(pix), 0)
@@ -75,12 +75,25 @@ func (pix Pix) GetGrayCopy(mode GrayCastMode) Pix {
 	return Pix(gray)
 }
 
+func (pix Pix) EnhancedCopy() Pix {
+	/*
+		00132 static const l_int32  DEFAULT_TILE_WIDTH = 10;
+		00133 static const l_int32  DEFAULT_TILE_HEIGHT = 15;
+		00134 static const l_int32  DEFAULT_FG_THRESHOLD = 60;
+		00135 static const l_int32  DEFAULT_MIN_COUNT = 40;
+		00136 static const l_int32  DEFAULT_BG_VAL = 200;
+		00137 static const l_int32  DEFAULT_X_SMOOTH_SIZE = 2;
+		00138 static const l_int32  DEFAULT_Y_SMOOTH_SIZE = 1;
+	*/
+	en, _, _ := pixBackgroundNorm.Call(uintptr(pix), 0, 0, 30, 30, 30, 200, 250, 1, 1)
+	return Pix(en)
+}
+
 func (pix Pix) GetRawGrayData() []byte {
 	gray := pix.GetGrayCopy(GRAY_CAST_REMOVE_COLORS)
 	if gray == 0 {
 		return nil
 	}
-
 	defer gray.Destroy()
 
 	w, h, _ := gray.GetDimensions()
