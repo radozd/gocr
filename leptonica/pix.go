@@ -9,6 +9,14 @@ import (
 
 type Pix uintptr
 
+type GrayCastMode int
+
+const (
+	GRAY_SIMPLE GrayCastMode = iota
+	GRAY_CAST_REMOVE_COLORS
+	GRAY_CAST_KEEP_ONLY_COLORS
+)
+
 func NewPixFromFile(filename string) Pix {
 	cFilename := C.CString(filename)
 	defer C.free(unsafe.Pointer(cFilename))
@@ -43,13 +51,22 @@ func (pix Pix) GetRotated180Copy() Pix {
 	return Pix(pix180)
 }
 
-// TODO: flags for 32->8 convert methods
-func (pix Pix) GetGrayCopy() Pix {
+func (pix Pix) GetGrayCopy(mode GrayCastMode) Pix {
 	var gray uintptr
 
 	_, _, d := pix.GetDimensions()
 	if d == 32 {
 		gray, _, _ = pixConvertRGBToGrayFast.Call(uintptr(pix))
+		if mode != GRAY_SIMPLE {
+			mask, _, _ := pixMaskOverGrayPixels.Call(uintptr(pix), uintptr(255), 60)
+			if mode == GRAY_CAST_REMOVE_COLORS {
+				//mask, _, _ = pixMaskOverColorPixels.Call(uintptr(pix), uintptr(50), uintptr(1))
+				pixInvert.Call(mask, mask)
+			}
+			defer Pix(mask).Destroy()
+
+			_, _, _ = pixPaintThroughMask.Call(gray, mask, uintptr(0), uintptr(0), uintptr(255))
+		}
 	} else if d != 8 {
 		gray, _, _ = pixConvertTo8.Call(uintptr(pix), 0)
 	} else {
@@ -59,7 +76,7 @@ func (pix Pix) GetGrayCopy() Pix {
 }
 
 func (pix Pix) GetRawGrayData() []byte {
-	gray := pix.GetGrayCopy()
+	gray := pix.GetGrayCopy(GRAY_CAST_REMOVE_COLORS)
 	if gray == 0 {
 		return nil
 	}

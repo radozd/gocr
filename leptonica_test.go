@@ -9,7 +9,7 @@ import (
 )
 
 func TestConvertGrey(t *testing.T) {
-	pix := leptonica.NewPixFromFile("test.png")
+	pix := leptonica.NewPixFromFile("colors.png")
 	if pix == 0 {
 		t.Error("error loading pix from file")
 	}
