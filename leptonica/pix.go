@@ -4,10 +4,37 @@ package leptonica
 import "C"
 
 import (
+	"errors"
+	"math"
+	"strconv"
 	"unsafe"
 )
 
 type Pix uintptr
+
+type ImageType int32
+
+const (
+	UNKNOWN ImageType = iota
+	BMP
+	JFIF_JPEG
+	PNG
+	TIFF
+	TIFF_PACKBITS
+	TIFF_RLE
+	TIFF_G3
+	TIFF_G4
+	TIFF_LZW
+	TIFF_ZIP
+	PNM
+	PS
+	GIF
+	JP2
+	WEBP
+	LPDF
+	DEFAULT
+	SPIX
+)
 
 type GrayCastMode int
 
@@ -25,14 +52,43 @@ func NewPixFromFile(filename string) Pix {
 	return Pix(pix)
 }
 
-func NewPixFromMem(image *[]byte) Pix {
-	size := C.size_t(len(*image))
-	pix, _, _ := pixReadMem.Call(uintptr(unsafe.Pointer(&(*image)[0])), uintptr(size))
+func NewPixFromMem(image []byte) Pix {
+	size := C.size_t(len(image))
+	pix, _, _ := pixReadMem.Call(uintptr(unsafe.Pointer(unsafe.SliceData(image))), uintptr(size))
 	return Pix(pix)
 }
 
 func (pix Pix) Destroy() {
 	pixDestroy.Call(uintptr(unsafe.Pointer(&pix)))
+}
+
+func (pix Pix) WriteToFile(filename string, format ImageType) error {
+	cFilename := C.CString(filename)
+	defer C.free(unsafe.Pointer(cFilename))
+
+	cFormat := C.int(format)
+
+	code, _, _ := pixWrite.Call(uintptr(unsafe.Pointer(cFilename)), uintptr(pix), uintptr(cFormat))
+	if code != 0 {
+		return errors.New("error saving pix: " + filename + " (format: " + strconv.Itoa(int(format)) + ")")
+	}
+	return nil
+}
+
+func (pix Pix) WriteToMem(format ImageType) ([]byte, error) {
+	var cMem *C.char = nil
+	cSize := C.size_t(0)
+	cFormat := C.int(format)
+
+	code, _, _ := pixWriteMem.Call(uintptr(unsafe.Pointer(&cMem)), uintptr(unsafe.Pointer(&cSize)), uintptr(pix), uintptr(cFormat))
+	if code != 0 {
+		return nil, errors.New("error " + strconv.Itoa(int(code)))
+	}
+	defer lept_free.Call(uintptr(unsafe.Pointer(cMem)))
+
+	data := C.GoBytes(unsafe.Pointer(cMem), C.int(cSize))
+
+	return data, nil
 }
 
 func (pix Pix) GetDimensions() (int, int, int) {
@@ -44,6 +100,11 @@ func (pix Pix) GetDimensions() (int, int, int) {
 		return 0, 0, 0
 	}
 	return int(cW), int(cH), int(cD)
+}
+
+func (pix Pix) GetScaledCopy(width int, height int) Pix {
+	scaled, _, _ := pixScaleToSize.Call(uintptr(pix), uintptr(width), uintptr(height))
+	return Pix(scaled)
 }
 
 func (pix Pix) GetRotated180Copy() Pix {
@@ -75,18 +136,40 @@ func (pix Pix) GetGrayCopy(mode GrayCastMode) Pix {
 	return Pix(gray)
 }
 
-func (pix Pix) EnhancedCopy() Pix {
-	/*
-		00132 static const l_int32  DEFAULT_TILE_WIDTH = 10;
-		00133 static const l_int32  DEFAULT_TILE_HEIGHT = 15;
-		00134 static const l_int32  DEFAULT_FG_THRESHOLD = 60;
-		00135 static const l_int32  DEFAULT_MIN_COUNT = 40;
-		00136 static const l_int32  DEFAULT_BG_VAL = 200;
-		00137 static const l_int32  DEFAULT_X_SMOOTH_SIZE = 2;
-		00138 static const l_int32  DEFAULT_Y_SMOOTH_SIZE = 1;
-	*/
-	en, _, _ := pixBackgroundNorm.Call(uintptr(pix), 0, 0, 30, 30, 30, 200, 250, 1, 1)
-	return Pix(en)
+type EnhanceOptions struct {
+	TileX    int
+	TileY    int
+	Thresh   int
+	MinCount int
+	BgVal    int
+	SmoothX  int
+	SmoothY  int
+
+	Gamma    float32
+	GammaMin int
+	GammaMax int
+
+	Factor float32
+}
+
+func (pix Pix) EnhancedCopy(opt EnhanceOptions) Pix {
+	var new uintptr
+	if opt.TileX > 0 {
+		new, _, _ = pixBackgroundNorm.Call(uintptr(pix), 0, 0, uintptr(opt.TileX), uintptr(opt.TileY),
+			uintptr(opt.Thresh), uintptr(opt.MinCount), uintptr(opt.BgVal), uintptr(opt.SmoothX), uintptr(opt.SmoothY))
+	} else {
+		new, _, _ = pixCopy.Call(uintptr(0), uintptr(pix))
+	}
+
+	if opt.Gamma > 0 {
+		pixGammaTRC.Call(new, new, uintptr(math.Float32bits(opt.Gamma)), uintptr(opt.GammaMin), uintptr(opt.GammaMax))
+	}
+
+	if opt.Factor > 0 {
+		pixContrastTRC.Call(new, new, uintptr(math.Float32bits(opt.Factor)))
+	}
+
+	return Pix(new)
 }
 
 func (pix Pix) GetRawGrayData() []byte {
