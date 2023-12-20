@@ -112,21 +112,31 @@ func (pix Pix) GetRotated180Copy() Pix {
 	return Pix(pix180)
 }
 
-func (pix Pix) GetGrayCopy(mode GrayCastMode) Pix {
+type GrayOptions struct {
+	Saturation int
+	WhitePoint int
+}
+
+var DefaultGrayOptions = GrayOptions{
+	Saturation: 40,
+	WhitePoint: 250,
+}
+
+func (pix Pix) GetGrayCopy(mode GrayCastMode, opt GrayOptions) Pix {
 	var gray uintptr
 
 	_, _, d := pix.GetDimensions()
 	if d == 32 {
 		gray, _, _ = pixConvertRGBToGrayFast.Call(uintptr(pix))
 		if mode != GRAY_SIMPLE {
-			mask, _, _ := pixMaskOverGrayPixels.Call(uintptr(pix), uintptr(255), 60)
+			mask, _, _ := pixMaskOverGrayPixels.Call(uintptr(pix), uintptr(255), uintptr(opt.Saturation))
 			defer Pix(mask).Destroy()
 
 			if mode == GRAY_CAST_REMOVE_COLORS {
 				//mask, _, _ = pixMaskOverColorPixels.Call(uintptr(pix), uintptr(50), uintptr(1))
 				pixInvert.Call(mask, mask)
 			}
-			_, _, _ = pixPaintThroughMask.Call(gray, mask, uintptr(0), uintptr(0), uintptr(250))
+			_, _, _ = pixPaintThroughMask.Call(gray, mask, uintptr(0), uintptr(0), uintptr(opt.WhitePoint))
 		}
 	} else if d != 8 {
 		gray, _, _ = pixConvertTo8.Call(uintptr(pix), 0)
@@ -152,6 +162,20 @@ type EnhanceOptions struct {
 	Factor float32
 }
 
+var DefaultEnhanceOptions = EnhanceOptions{
+	TileX:    10,
+	TileY:    10,
+	Thresh:   40,
+	MinCount: 50,
+	BgVal:    250,
+	SmoothX:  1,
+	SmoothY:  1,
+	Gamma:    0,
+	GammaMin: 20,
+	GammaMax: 240,
+	Factor:   0.5,
+}
+
 func (pix Pix) EnhancedCopy(opt EnhanceOptions) Pix {
 	var new uintptr
 	if opt.TileX > 0 {
@@ -173,7 +197,7 @@ func (pix Pix) EnhancedCopy(opt EnhanceOptions) Pix {
 }
 
 func (pix Pix) GetRawGrayData() []byte {
-	gray := pix.GetGrayCopy(GRAY_CAST_REMOVE_COLORS)
+	gray := pix.GetGrayCopy(GRAY_CAST_REMOVE_COLORS, DefaultGrayOptions)
 	if gray == 0 {
 		return nil
 	}

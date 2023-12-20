@@ -61,6 +61,9 @@ func TestEnhancePix(t *testing.T) {
 	}
 	defer pix.Destroy()
 
+	tmp := pix.GetGrayCopy(leptonica.GRAY_CAST_REMOVE_COLORS, leptonica.DefaultGrayOptions)
+	defer tmp.Destroy()
+
 	opt := leptonica.EnhanceOptions{
 		TileX:    10,
 		TileY:    10,
@@ -74,7 +77,7 @@ func TestEnhancePix(t *testing.T) {
 		GammaMax: 240,
 		Factor:   0.5,
 	}
-	en := pix.EnhancedCopy(opt)
+	en := tmp.EnhancedCopy(opt)
 	defer en.Destroy()
 
 	en.WriteToFile("test_enhanced1.jpg", leptonica.JFIF_JPEG)
