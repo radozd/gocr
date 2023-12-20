@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	leptonicaDll = syscall.NewLazyDLL("leptonica-1.82.0.dll")
+	leptonicaDll = syscall.NewLazyDLL("leptonica-1.84.0.dll")
 
 	pixDestroy = leptonicaDll.NewProc("pixDestroy")
 	lept_free  = leptonicaDll.NewProc("lept_free")

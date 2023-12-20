@@ -4,9 +4,8 @@ package tesseract
 import "C"
 import "syscall"
 
-// Function signatures from Tesseract DLL
 var (
-	tessDll = syscall.NewLazyDLL("tesseract50.dll")
+	tessDll = syscall.NewLazyDLL("tesseract53.dll")
 
 	tessCreate         = tessDll.NewProc("TessBaseAPICreate")
 	tessBaseAPIEnd     = tessDll.NewProc("TessBaseAPIEnd")
