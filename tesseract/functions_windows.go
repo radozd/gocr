@@ -27,6 +27,9 @@ var (
 	tessGetIterator                   = tessDll.NewProc("TessBaseAPIGetIterator")            //TessResultIterator *(TessBaseAPI *handle)
 	tessResultIteratorGetPageIterator = tessDll.NewProc("TessResultIteratorGetPageIterator") //TessPageIterator *(TessResultIterator *handle);
 
+	tessPageIteratorOrientation = tessDll.NewProc("TessPageIteratorOrientation") //(TessPageIterator *handle, TessOrientation *orientation,
+	//TessWritingDirection *writing_direction, TessTextlineOrder *textline_order, float *deskew_angle);
+
 	tessResultIteratorDelete      = tessDll.NewProc("TessResultIteratorDelete")      // void(TessResultIterator *handle);
 	tessResultIteratorNext        = tessDll.NewProc("TessResultIteratorNext")        // BOOL(TessResultIterator *handle, TessPageIteratorLevel level)
 	tessResultIteratorGetUTF8Text = tessDll.NewProc("TessResultIteratorGetUTF8Text") // char*(const TessResultIterator *handle, TessPageIteratorLevel level)

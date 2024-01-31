@@ -172,3 +172,31 @@ func (api *Api) TextBlocks(level PageIteratorLevel) []TextBlock {
 	}
 	return blocks
 }
+
+type PageOrientation int
+
+const (
+	ORIENTATION_PAGE_UP PageOrientation = iota
+	ORIENTATION_PAGE_RIGHT
+	ORIENTATION_PAGE_DOWN
+	ORIENTATION_PAGE_LEFT
+)
+
+func (api *Api) GetPageOrientation() PageOrientation {
+	resIt := api.GetIterator()
+	defer resIt.Delete()
+
+	pageIt := resIt.GetPageIterator()
+
+	orientation := C.int(0)
+	writing_direction := C.int(0)
+	textline_order := C.int(0)
+	deskew_angle := C.int(0)
+
+	tessPageIteratorOrientation.Call(uintptr(pageIt), uintptr(unsafe.Pointer(&orientation)),
+		uintptr(unsafe.Pointer(&writing_direction)),
+		uintptr(unsafe.Pointer(&textline_order)),
+		uintptr(unsafe.Pointer(&deskew_angle)))
+
+	return PageOrientation(orientation)
+}

@@ -55,7 +55,7 @@ func TestConvertGrey(t *testing.T) {
 }
 
 func TestEnhancePix(t *testing.T) {
-	pix := leptonica.NewPixFromFile("tst.jpg")
+	pix := leptonica.NewPixFromFile("bad.jpg")
 	if pix == 0 {
 		t.Error("error loading pix from file")
 	}
@@ -72,13 +72,42 @@ func TestEnhancePix(t *testing.T) {
 		BgVal:    250,
 		SmoothX:  1,
 		SmoothY:  1,
-		Gamma:    0, //.9,
+		Gamma:    0.6,
 		GammaMin: 20,
 		GammaMax: 240,
-		Factor:   0.5,
+		Factor:   0.4,
 	}
 	en := tmp.EnhancedCopy(opt)
 	defer en.Destroy()
 
-	en.WriteToFile("test_enhanced1.jpg", leptonica.JFIF_JPEG)
+	en.WriteToFile("bad_enhanced1.jpg", leptonica.JFIF_JPEG)
+}
+
+func TestEnhancePix2(t *testing.T) {
+	pix := leptonica.NewPixFromFile("bad2.tif")
+	if pix == 0 {
+		t.Error("error loading pix from file")
+	}
+	defer pix.Destroy()
+
+	tmp := pix.GetGrayCopy(leptonica.GRAY_CAST_REMOVE_COLORS, leptonica.DefaultGrayOptions)
+	defer tmp.Destroy()
+
+	opt := leptonica.EnhanceOptions{
+		TileX:    10,
+		TileY:    10,
+		Thresh:   40,
+		MinCount: 50,
+		BgVal:    250,
+		SmoothX:  1,
+		SmoothY:  1,
+		Gamma:    0.6,
+		GammaMin: 20,
+		GammaMax: 240,
+		Factor:   0.4,
+	}
+	en := tmp.EnhancedCopy(opt)
+	defer en.Destroy()
+
+	en.WriteToFile("bad_enhanced2.jpg", leptonica.JFIF_JPEG)
 }

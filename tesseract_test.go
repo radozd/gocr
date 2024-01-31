@@ -17,12 +17,13 @@ func TestOcr(t *testing.T) {
 	tess := tesseract.NewApi("fra")
 	defer tess.Close()
 
-	tess.SetPageSegMode(tesseract.PSM_AUTO)
+	tess.SetPageSegMode(tesseract.PSM_AUTO_OSD)
 	tess.SetVariable("preserve_interword_spaces", "1")
 
 	tess.SetImagePix(pix)
 	tess.Recognize()
 
+	t.Log(tess.GetPageOrientation())
 	t.Log("\n" + tess.Text())
 
 	resIt := tess.GetIterator()
