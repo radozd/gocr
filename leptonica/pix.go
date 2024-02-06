@@ -112,6 +112,11 @@ func (pix Pix) GetRotated180Copy() Pix {
 	return Pix(pix180)
 }
 
+func (pix Pix) GetDeskewedCopy(redsearch int) Pix {
+	dpix, _, _ := pixDeskew.Call(uintptr(pix), uintptr(redsearch))
+	return Pix(dpix)
+}
+
 type GrayOptions struct {
 	Saturation int
 	WhitePoint int

@@ -54,6 +54,24 @@ func TestConvertGrey(t *testing.T) {
 	f.Write(gray)
 }
 
+func TestDeskew(t *testing.T) {
+	pix := leptonica.NewPixFromFile("skewed.jpg")
+	if pix == 0 {
+		t.Error("error loading pix from file")
+	}
+	defer pix.Destroy()
+
+	w, h, d := pix.GetDimensions()
+	t.Log("img:", w, h, d)
+
+	dpix := pix.GetDeskewedCopy(0)
+	if dpix == 0 {
+		t.Error("error loading pix")
+	}
+
+	dpix.WriteToFile("deskewed.jpg", leptonica.JFIF_JPEG)
+}
+
 func TestEnhancePix(t *testing.T) {
 	pix := leptonica.NewPixFromFile("bad.jpg")
 	if pix == 0 {

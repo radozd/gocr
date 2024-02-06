@@ -19,8 +19,9 @@ var (
 	pixWriteMem = leptonicaDll.NewProc("pixWriteMem")
 
 	pixRotate180   = leptonicaDll.NewProc("pixRotate180")
-	pixAddBorder   = leptonicaDll.NewProc("pixAddBorder")   //PIX *pixAddBorder (PIX *pixs, l_int32 npix, l_uint32 val);
+	pixAddBorder   = leptonicaDll.NewProc("pixAddBorder")   //PIX *pixAddBorder (PIX *pixs, l_int32 npix, l_uint32 val)
 	pixScaleToSize = leptonicaDll.NewProc("pixScaleToSize") //PIX *pixScaleToSize(PIX *pixs, l_int32 wd, l_int32 hd)
+	pixDeskew      = leptonicaDll.NewProc("pixDeskew")      //PIX * pixDeskew(PIX *pixs, l_int32  redsearch)
 
 	pixMaskOverColorPixels = leptonicaDll.NewProc("pixMaskOverColorPixels") //PIX *pixMaskOverColorPixels(PIX *pixs, l_int32 threshdiff, l_int32 mindist)
 	pixMaskOverGrayPixels  = leptonicaDll.NewProc("pixMaskOverGrayPixels")  //PIX *pixMaskOverGrayPixels(PIX *pixs, l_int32  maxlimit, l_int32  satlimit)
