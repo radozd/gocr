@@ -101,31 +101,32 @@ func TestEnhancePix(t *testing.T) {
 	en.WriteToFile("bad_enhanced1.jpg", leptonica.JFIF_JPEG)
 }
 
-func TestEnhancePix2(t *testing.T) {
-	pix := leptonica.NewPixFromFile("bad2.tif")
+func TestEnhancePixLoop(t *testing.T) {
+	pix := leptonica.NewPixFromFile("good-eprescr.tif")
 	if pix == 0 {
 		t.Error("error loading pix from file")
 	}
 	defer pix.Destroy()
 
-	tmp := pix.GetGrayCopy(leptonica.GRAY_CAST_REMOVE_COLORS, leptonica.DefaultGrayOptions)
-	defer tmp.Destroy()
+	for i := 10; i < 100; i += 20 {
+		opt := leptonica.EnhanceOptions{
+			TileX:    10,
+			TileY:    10,
+			Thresh:   40,
+			MinCount: i, //50,
+			BgVal:    250,
+			SmoothX:  1,
+			SmoothY:  1,
+			Gamma:    0.5, //float32(i) / 100, //0.6,
+			GammaMin: 20,
+			GammaMax: 240,
+			Factor:   0.4, //float32(i) / 100, //0.4,
+		}
+		en := pix.EnhancedCopy(opt)
+		tmp := en.GetGrayCopy(leptonica.GRAY_CAST_REMOVE_COLORS, leptonica.DefaultGrayOptions)
 
-	opt := leptonica.EnhanceOptions{
-		TileX:    10,
-		TileY:    10,
-		Thresh:   40,
-		MinCount: 50,
-		BgVal:    250,
-		SmoothX:  1,
-		SmoothY:  1,
-		Gamma:    0.6,
-		GammaMin: 20,
-		GammaMax: 240,
-		Factor:   0.4,
+		tmp.WriteToFile(fmt.Sprintf("20240130173214_370-%d.jpg", i), leptonica.JFIF_JPEG)
+		tmp.Destroy()
+		en.Destroy()
 	}
-	en := tmp.EnhancedCopy(opt)
-	defer en.Destroy()
-
-	en.WriteToFile("bad_enhanced2.jpg", leptonica.JFIF_JPEG)
 }

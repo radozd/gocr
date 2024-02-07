@@ -182,23 +182,31 @@ var DefaultEnhanceOptions = EnhanceOptions{
 }
 
 func (pix Pix) EnhancedCopy(opt EnhanceOptions) Pix {
-	var new uintptr
+	p := pix
+	_, _, d := pix.GetDimensions()
+	if d != 8 && d != 32 {
+		pp, _, _ := pixConvertTo8.Call(uintptr(pix), 0)
+		p = Pix(pp)
+		defer p.Destroy()
+	}
+
+	var enhanced uintptr
 	if opt.TileX > 0 {
-		new, _, _ = pixBackgroundNorm.Call(uintptr(pix), 0, 0, uintptr(opt.TileX), uintptr(opt.TileY),
+		enhanced, _, _ = pixBackgroundNorm.Call(uintptr(p), 0, 0, uintptr(opt.TileX), uintptr(opt.TileY),
 			uintptr(opt.Thresh), uintptr(opt.MinCount), uintptr(opt.BgVal), uintptr(opt.SmoothX), uintptr(opt.SmoothY))
 	} else {
-		new, _, _ = pixCopy.Call(uintptr(0), uintptr(pix))
+		enhanced, _, _ = pixCopy.Call(uintptr(0), uintptr(p))
 	}
 
 	if opt.Gamma > 0 {
-		pixGammaTRC.Call(new, new, uintptr(math.Float32bits(opt.Gamma)), uintptr(opt.GammaMin), uintptr(opt.GammaMax))
+		pixGammaTRC.Call(enhanced, enhanced, uintptr(math.Float32bits(opt.Gamma)), uintptr(opt.GammaMin), uintptr(opt.GammaMax))
 	}
 
 	if opt.Factor > 0 {
-		pixContrastTRC.Call(new, new, uintptr(math.Float32bits(opt.Factor)))
+		pixContrastTRC.Call(enhanced, enhanced, uintptr(math.Float32bits(opt.Factor)))
 	}
 
-	return Pix(new)
+	return Pix(enhanced)
 }
 
 func (pix Pix) GetRawGrayData() []byte {
