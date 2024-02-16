@@ -42,6 +42,7 @@ const (
 	GRAY_SIMPLE GrayCastMode = iota
 	GRAY_CAST_REMOVE_COLORS
 	GRAY_CAST_KEEP_ONLY_COLORS
+	GRAY_CAST_REMOVE_COLORS_2
 )
 
 func NewPixFromFile(filename string) Pix {
@@ -120,11 +121,17 @@ func (pix Pix) GetDeskewedCopy(redsearch int) Pix {
 type GrayOptions struct {
 	Saturation int
 	WhitePoint int
+
+	ThreshDiff int
+	MinDist    int
 }
 
 var DefaultGrayOptions = GrayOptions{
 	Saturation: 40,
 	WhitePoint: 250,
+
+	ThreshDiff: 90,
+	MinDist:    2,
 }
 
 func (pix Pix) GetGrayCopy(mode GrayCastMode, opt GrayOptions) Pix {
@@ -134,14 +141,17 @@ func (pix Pix) GetGrayCopy(mode GrayCastMode, opt GrayOptions) Pix {
 	if d == 32 {
 		gray, _, _ = pixConvertRGBToGrayFast.Call(uintptr(pix))
 		if mode != GRAY_SIMPLE {
-			mask, _, _ := pixMaskOverGrayPixels.Call(uintptr(pix), uintptr(255), uintptr(opt.Saturation))
-			defer Pix(mask).Destroy()
-
-			if mode == GRAY_CAST_REMOVE_COLORS {
-				//mask, _, _ = pixMaskOverColorPixels.Call(uintptr(pix), uintptr(50), uintptr(1))
+			var mask uintptr
+			if mode == GRAY_CAST_KEEP_ONLY_COLORS {
+				mask, _, _ = pixMaskOverGrayPixels.Call(uintptr(pix), uintptr(opt.WhitePoint), uintptr(opt.Saturation))
+			} else if mode == GRAY_CAST_REMOVE_COLORS {
+				mask, _, _ = pixMaskOverGrayPixels.Call(uintptr(pix), uintptr(opt.WhitePoint), uintptr(opt.Saturation))
 				pixInvert.Call(mask, mask)
+			} else if mode == GRAY_CAST_REMOVE_COLORS_2 {
+				mask, _, _ = pixMaskOverColorPixels.Call(uintptr(pix), uintptr(opt.ThreshDiff), uintptr(opt.MinDist))
 			}
 			_, _, _ = pixPaintThroughMask.Call(gray, mask, uintptr(0), uintptr(0), uintptr(opt.WhitePoint))
+			Pix(mask).Destroy()
 		}
 	} else if d != 8 {
 		gray, _, _ = pixConvertTo8.Call(uintptr(pix), 0)
@@ -182,20 +192,20 @@ var DefaultEnhanceOptions = EnhanceOptions{
 }
 
 func (pix Pix) EnhancedCopy(opt EnhanceOptions) Pix {
-	p := pix
+	var enhanced uintptr
+
 	_, _, d := pix.GetDimensions()
 	if d != 8 && d != 32 {
-		pp, _, _ := pixConvertTo8.Call(uintptr(pix), 0)
-		p = Pix(pp)
-		defer p.Destroy()
+		enhanced, _, _ = pixConvertTo8.Call(uintptr(pix), 0)
+	} else {
+		enhanced, _, _ = pixCopy.Call(uintptr(0), uintptr(pix))
 	}
 
-	var enhanced uintptr
 	if opt.TileX > 0 {
-		enhanced, _, _ = pixBackgroundNorm.Call(uintptr(p), 0, 0, uintptr(opt.TileX), uintptr(opt.TileY),
+		tmp, _, _ := pixBackgroundNorm.Call(enhanced, 0, 0, uintptr(opt.TileX), uintptr(opt.TileY),
 			uintptr(opt.Thresh), uintptr(opt.MinCount), uintptr(opt.BgVal), uintptr(opt.SmoothX), uintptr(opt.SmoothY))
-	} else {
-		enhanced, _, _ = pixCopy.Call(uintptr(0), uintptr(p))
+		Pix(enhanced).Destroy()
+		enhanced = tmp
 	}
 
 	if opt.Gamma > 0 {
