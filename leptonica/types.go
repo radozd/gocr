@@ -72,7 +72,7 @@ type GrayOptions struct {
 }
 
 var DefaultGrayOptions = GrayOptions{
-	Saturation: 40,
+	Saturation: 150,
 	WhitePoint: 250,
 
 	ThreshDiff: 90,
