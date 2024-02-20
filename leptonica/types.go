@@ -53,14 +53,14 @@ var DefaultEnhanceOptions = EnhanceOptions{
 	TileX:    10,
 	TileY:    10,
 	Thresh:   40,
-	MinCount: 50,
+	MinCount: 40,
 	BgVal:    250,
-	SmoothX:  1,
-	SmoothY:  1,
-	Gamma:    0,
+	SmoothX:  4,
+	SmoothY:  4,
+	Gamma:    0.5,
 	GammaMin: 20,
 	GammaMax: 240,
-	Factor:   0.5,
+	Factor:   0.8,
 }
 
 type GrayOptions struct {

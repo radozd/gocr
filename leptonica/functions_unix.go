@@ -11,7 +11,6 @@ package leptonica
 // #include <leptonica/allheaders.h>
 import "C"
 import (
-	"math"
 	"unsafe"
 )
 
@@ -19,7 +18,7 @@ type Pix struct {
 	p *C.PIX
 }
 
-var NullPix Pix = Pix{}
+var NullPix Pix = Pix{p: nil}
 
 func UnsafePix(pix Pix) uintptr {
 	return uintptr(unsafe.Pointer(pix.p))
@@ -98,11 +97,11 @@ func pixPaintThroughMask(pixd Pix, pixm Pix, x int, y int, val uint) int {
 }
 
 func pixContrastTRC(pixd Pix, pixs Pix, factor float32) Pix {
-	return Pix{p: C.pixContrastTRC(pixd.p, pixs.p, C.l_float32(math.Float32bits(factor)))}
+	return Pix{p: C.pixContrastTRC(pixd.p, pixs.p, C.l_float32(factor))}
 }
 
 func pixGammaTRC(pixd Pix, pixs Pix, gamma float32, minval int, maxval int) Pix {
-	return Pix{p: C.pixGammaTRC(pixd.p, pixs.p, C.l_float32(math.Float32bits(gamma)), C.l_int32(minval), C.l_int32(maxval))}
+	return Pix{p: C.pixGammaTRC(pixd.p, pixs.p, C.l_float32(gamma), C.l_int32(minval), C.l_int32(maxval))}
 }
 
 func pixBackgroundNorm(pixs Pix, pixim Pix, pixg Pix, sx int, sy int, thresh int, mincount int, bgval int, smoothx int, smoothy int) Pix {
