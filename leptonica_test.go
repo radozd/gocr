@@ -9,13 +9,15 @@ import (
 )
 
 func TestConvertPix(t *testing.T) {
-	buf, err := os.ReadFile("tst.jpg")
+	buf, err := os.ReadFile("test.png")
 	if err != nil {
 		t.Error(err)
+		return
 	}
 	pix := leptonica.NewPixFromMem(buf)
-	if pix == 0 {
+	if pix == leptonica.NullPix {
 		t.Error("error loading pix from file")
+		return
 	}
 	defer pix.Destroy()
 
@@ -24,14 +26,16 @@ func TestConvertPix(t *testing.T) {
 	tmpbuf, err := pix.WriteToMem(leptonica.PNG)
 	if err != nil {
 		t.Error(err)
+		return
 	}
 	os.WriteFile("test_write2.png", tmpbuf, os.ModePerm)
 }
 
 func TestConvertGrey(t *testing.T) {
 	pix := leptonica.NewPixFromFile("colors.png")
-	if pix == 0 {
+	if pix == leptonica.NullPix {
 		t.Error("error loading pix from file")
+		return
 	}
 	defer pix.Destroy()
 
@@ -41,6 +45,7 @@ func TestConvertGrey(t *testing.T) {
 	gray := pix.GetRawGrayData()
 	if gray == nil {
 		t.Error("error loading pix")
+		return
 	}
 
 	t.Log("gry size=", len(gray))
@@ -48,6 +53,7 @@ func TestConvertGrey(t *testing.T) {
 	f, err := os.Create("gray.pgm")
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	f.WriteString(fmt.Sprintf("P5\n%d %d\n255\n", w, h))
@@ -56,8 +62,9 @@ func TestConvertGrey(t *testing.T) {
 
 func TestDeskew(t *testing.T) {
 	pix := leptonica.NewPixFromFile("skewed.jpg")
-	if pix == 0 {
+	if pix == leptonica.NullPix {
 		t.Error("error loading pix from file")
+		return
 	}
 	defer pix.Destroy()
 
@@ -65,8 +72,9 @@ func TestDeskew(t *testing.T) {
 	t.Log("img:", w, h, d)
 
 	dpix := pix.GetDeskewedCopy(0)
-	if dpix == 0 {
+	if dpix == leptonica.NullPix {
 		t.Error("error loading pix")
+		return
 	}
 
 	dpix.WriteToFile("deskewed.jpg", leptonica.JFIF_JPEG)
@@ -74,8 +82,9 @@ func TestDeskew(t *testing.T) {
 
 func TestEnhancePix(t *testing.T) {
 	pix := leptonica.NewPixFromFile("bad.jpg")
-	if pix == 0 {
+	if pix == leptonica.NullPix {
 		t.Error("error loading pix from file")
+		return
 	}
 	defer pix.Destroy()
 
@@ -102,31 +111,41 @@ func TestEnhancePix(t *testing.T) {
 }
 
 func TestEnhancePixLoop(t *testing.T) {
-	pix := leptonica.NewPixFromFile("good-eprescr.tif")
-	if pix == 0 {
+	pix := leptonica.NewPixFromFile("new_worse.jpg")
+	if pix == leptonica.NullPix {
 		t.Error("error loading pix from file")
+		return
 	}
 	defer pix.Destroy()
 
-	for i := 10; i < 100; i += 20 {
+	for i := 0; i < 10; i++ {
 		opt := leptonica.EnhanceOptions{
-			TileX:    10,
-			TileY:    10,
-			Thresh:   40,
-			MinCount: i, //50,
+			TileX:    10, //10,
+			TileY:    10, //10,
+			Thresh:   40, //40,      //40,
+			MinCount: 40, //10,
 			BgVal:    250,
-			SmoothX:  1,
-			SmoothY:  1,
-			Gamma:    0.5, //float32(i) / 100, //0.6,
+			SmoothX:  4,                   //2,
+			SmoothY:  4,                   //2,
+			Gamma:    float32(i)/10 + 0.5, //0.3, //0.3,
 			GammaMin: 20,
 			GammaMax: 240,
-			Factor:   0.4, //float32(i) / 100, //0.4,
+			Factor:   0.8, //float32(i) / 10, //0.8,
 		}
 		en := pix.EnhancedCopy(opt)
-		tmp := en.GetGrayCopy(leptonica.GRAY_CAST_REMOVE_COLORS, leptonica.DefaultGrayOptions)
+		deskew := en.GetDeskewedCopy(0)
 
-		tmp.WriteToFile(fmt.Sprintf("20240130173214_370-%d.jpg", i), leptonica.JFIF_JPEG)
+		var opt2 = leptonica.GrayOptions{
+			Saturation: 90,
+			ThreshDiff: 90, //110, //40,
+			MinDist:    2,
+			WhitePoint: 250,
+		}
+		tmp := deskew.GetGrayCopy(leptonica.GRAY_CAST_REMOVE_COLORS, opt2)
+		tmp.WriteToFile(fmt.Sprintf("enhloop-%d.jpg", i), leptonica.JFIF_JPEG)
+
 		tmp.Destroy()
+		deskew.Destroy()
 		en.Destroy()
 	}
 }

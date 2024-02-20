@@ -9,8 +9,9 @@ import (
 
 func TestOcr(t *testing.T) {
 	pix := leptonica.NewPixFromFile("test.png")
-	if pix == 0 {
+	if pix == leptonica.NullPix {
 		t.Error("error loading pix")
+		return
 	}
 	defer pix.Destroy()
 
