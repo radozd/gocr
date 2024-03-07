@@ -21,10 +21,13 @@ var (
 	_pixWrite    = leptonicaDll.NewProc("pixWrite")
 	_pixWriteMem = leptonicaDll.NewProc("pixWriteMem")
 
-	_pixRotate180   = leptonicaDll.NewProc("pixRotate180")
-	_pixAddBorder   = leptonicaDll.NewProc("pixAddBorder")
-	_pixScaleToSize = leptonicaDll.NewProc("pixScaleToSize")
-	_pixDeskew      = leptonicaDll.NewProc("pixDeskew")
+	_pixRotate180         = leptonicaDll.NewProc("pixRotate180")
+	_pixRotate            = leptonicaDll.NewProc("pixRotate")
+	_pixAddBorder         = leptonicaDll.NewProc("pixAddBorder")
+	_pixRasterop          = leptonicaDll.NewProc("pixRasterop")
+	_pixScaleToSize       = leptonicaDll.NewProc("pixScaleToSize")
+	_pixDeskew            = leptonicaDll.NewProc("pixDeskew")
+	_pixFindSkewAndDeskew = leptonicaDll.NewProc("pixFindSkewAndDeskew")
 
 	_pixMaskOverColorPixels = leptonicaDll.NewProc("pixMaskOverColorPixels")
 	_pixMaskOverGrayPixels  = leptonicaDll.NewProc("pixMaskOverGrayPixels")
@@ -100,9 +103,21 @@ func pixRotate180(pixd Pix, pixs Pix) Pix {
 	return Pix(pix)
 }
 
+func pixRotate(pixs Pix, angle float32) Pix {
+	deg2rad := float32(3.1415926535 / 180.0)
+	pix, _, _ := _pixRotate.Call(uintptr(pixs), uintptr(math.Float32bits(deg2rad*angle)), uintptr(1), uintptr(1), uintptr(0), uintptr(0))
+	return Pix(pix)
+}
+
 func pixAddBorder(pixs Pix, npix int, val uint) Pix {
 	pix, _, _ := _pixAddBorder.Call(uintptr(pixs), uintptr(C.int32_t(npix)), uintptr(C.uint32_t(val)))
 	return Pix(pix)
+}
+
+func pixRasterop(pixd Pix, dx int, dy int, dw int, dh int, op int, pixs Pix, sx int, sy int) bool {
+	res, _, _ := _pixRasterop.Call(uintptr(pixd), uintptr(C.int32_t(dx)), uintptr(C.int32_t(dy)), uintptr(C.int32_t(dw)), uintptr(C.int32_t(dh)),
+		uintptr(C.int32_t(op)), uintptr(pixs), uintptr(C.int32_t(sx)), uintptr(C.int32_t(sy)))
+	return res == 0
 }
 
 func pixScaleToSize(pixs Pix, wd int, hd int) Pix {
@@ -113,6 +128,13 @@ func pixScaleToSize(pixs Pix, wd int, hd int) Pix {
 func pixDeskew(pixs Pix, redsearch int) Pix {
 	pix, _, _ := _pixDeskew.Call(uintptr(pixs), uintptr(C.int32_t(redsearch)))
 	return Pix(pix)
+}
+
+func pixFindSkewAndDeskew(pixs Pix, redsearch int) (Pix, float32) {
+	angle := C.float(0)
+	conf := C.float(0)
+	pix, _, _ := _pixFindSkewAndDeskew.Call(uintptr(pixs), uintptr(C.int32_t(redsearch)), uintptr(unsafe.Pointer(&angle)), uintptr(unsafe.Pointer(&conf)))
+	return Pix(pix), float32(angle)
 }
 
 func pixMaskOverColorPixels(pixs Pix, threshdiff int, mindist int) Pix {

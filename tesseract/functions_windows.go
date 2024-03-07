@@ -96,7 +96,7 @@ func tessBaseAPISetPageSegMode(api Api, mode TessPageSegMode) {
 }
 
 func tessBaseAPISetImage2(api Api, pix leptonica.Pix) {
-	_tessBaseAPISetImage2.Call(api.handle, uintptr(unsafe.Pointer(leptonica.UnsafePix(pix))))
+	_tessBaseAPISetImage2.Call(api.handle, leptonica.UnsafePix(pix))
 }
 
 /* Utility */

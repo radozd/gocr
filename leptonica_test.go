@@ -61,7 +61,7 @@ func TestConvertGrey(t *testing.T) {
 }
 
 func TestDeskew(t *testing.T) {
-	pix := leptonica.NewPixFromFile("skewed.jpg")
+	pix := leptonica.NewPixFromFile("rotated.jpg")
 	if pix == leptonica.NullPix {
 		t.Error("error loading pix from file")
 		return
@@ -76,8 +76,35 @@ func TestDeskew(t *testing.T) {
 		t.Error("error loading pix")
 		return
 	}
+	defer dpix.Destroy()
 
 	dpix.WriteToFile("deskewed.jpg", leptonica.JFIF_JPEG)
+}
+
+func TestRotate(t *testing.T) {
+	pix := leptonica.NewPixFromFile("test.png")
+	if pix == leptonica.NullPix {
+		t.Error("error loading pix from file")
+		return
+	}
+	defer pix.Destroy()
+
+	w, h, d := pix.GetDimensions()
+	t.Log("img:", w, h, d)
+
+	dpix := pix.GetRotatedCopy(-3)
+	if dpix == leptonica.NullPix {
+		t.Error("error loading pix")
+		return
+	}
+	defer dpix.Destroy()
+
+	pix2, angle := dpix.GetDeskewedCopyAndAngle(0)
+	defer pix2.Destroy()
+
+	t.Log(angle)
+
+	pix2.WriteToFile("rotated.jpg", leptonica.JFIF_JPEG)
 }
 
 func TestEnhancePix(t *testing.T) {
@@ -148,4 +175,21 @@ func TestEnhancePixLoop(t *testing.T) {
 		deskew.Destroy()
 		en.Destroy()
 	}
+}
+
+func TestRect(t *testing.T) {
+	pix := leptonica.NewPixFromFile("test.png")
+	if pix == leptonica.NullPix {
+		t.Error("error loading pix from file")
+		return
+	}
+	defer pix.Destroy()
+
+	w, h, d := pix.GetDimensions()
+	t.Log("img:", w, h, d)
+
+	pix.FillRect(10, 10, 10, 50, false)
+	pix.FillRect(150, 150, 50, 50, true)
+
+	pix.WriteToFile("rect.jpg", leptonica.JFIF_JPEG)
 }

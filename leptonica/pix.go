@@ -40,12 +40,32 @@ func (pix Pix) GetScaledCopy(width int, height int) Pix {
 	return pixScaleToSize(pix, width, height)
 }
 
+func (pix Pix) FillRect(x int, y int, w int, h int, white bool) {
+	PIX_SET := 15
+	PIX_CLR := 0
+	var op int
+	if white {
+		op = PIX_SET
+	} else {
+		op = PIX_CLR
+	}
+	pixRasterop(pix, x, y, w, h, op, pix, x, y)
+}
+
 func (pix Pix) GetRotated180Copy() Pix {
 	return pixRotate180(NullPix, pix)
 }
 
+func (pix Pix) GetRotatedCopy(angle float32) Pix {
+	return pixRotate(pix, angle)
+}
+
 func (pix Pix) GetDeskewedCopy(redsearch int) Pix {
 	return pixDeskew(pix, redsearch)
+}
+
+func (pix Pix) GetDeskewedCopyAndAngle(redsearch int) (Pix, float32) {
+	return pixFindSkewAndDeskew(pix, redsearch)
 }
 
 func (pix Pix) GetGrayCopy(mode GrayCastMode, opt GrayOptions) Pix {

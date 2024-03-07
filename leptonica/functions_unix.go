@@ -68,8 +68,17 @@ func pixRotate180(pixd Pix, pixs Pix) Pix {
 	return Pix{p: C.pixRotate180(pixd.p, pixs.p)}
 }
 
+func pixRotate(pixs Pix, angle float32) Pix {
+	deg2rad := float32(3.1415926535 / 180.0)
+	return Pix{p: C.pixRotate(pixs.p, C.float(deg2rad*angle), 1, 1, 0, 0)}
+}
+
 func pixAddBorder(pixs Pix, npix int, val uint) Pix {
 	return Pix{p: C.pixAddBorder(pixs.p, C.l_int32(npix), C.l_uint32(val))}
+}
+
+func pixRasterop(pixd Pix, dx int, dy int, dw int, dh int, op int, pixs Pix, sx int, sy int) bool {
+	return C.pixRasterop(pixd.p, C.l_int32(dx), C.l_int32(dy), C.l_int32(dw), C.l_int32(dh), C.l_int32(op), pixs.p, C.l_int32(sx), C.l_int32(sy)) == 0
 }
 
 func pixScaleToSize(pixs Pix, wd int, hd int) Pix {
@@ -78,6 +87,13 @@ func pixScaleToSize(pixs Pix, wd int, hd int) Pix {
 
 func pixDeskew(pixs Pix, redsearch int) Pix {
 	return Pix{p: C.pixDeskew(pixs.p, C.l_int32(redsearch))}
+}
+
+func pixFindSkewAndDeskew(pixs Pix, redsearch int) (Pix, float32) {
+	angle := C.float(0)
+	conf := C.float(0)
+	pix := C.pixFindSkewAndDeskew(pixs.p, C.l_int32(redsearch), &angle, &conf)
+	return Pix{p: pix}, float32(angle)
 }
 
 func pixMaskOverColorPixels(pixs Pix, threshdiff int, mindist int) Pix {
