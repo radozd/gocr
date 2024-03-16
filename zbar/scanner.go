@@ -1,5 +1,3 @@
-//go:build windows
-
 package zbar
 
 // #include <stdlib.h>
@@ -11,29 +9,22 @@ import (
 	"github.com/radozd/gocr/leptonica"
 )
 
-type Scanner struct {
-	handle uintptr
-}
-
 const ZBAR_CFG_ENABLE int = 0
 
-func NewScanner() *Scanner {
-	s, _, _ := zbar_image_scanner_create.Call()
-	return &Scanner{handle: s}
+func NewScanner() Scanner {
+	return zbar_image_scanner_create()
 }
 
 func (scn Scanner) setConfig(symbology int, config int, value int) {
-	zbar_image_scanner_set_config.Call(scn.handle, uintptr(symbology), uintptr(config), uintptr(value))
+	zbar_image_scanner_set_config(scn, symbology, config, value)
 }
 
 func (scn Scanner) scan(img image) bool {
-	res, _, _ := zbar_scan_image.Call(scn.handle, uintptr(img))
-	return res > 0
+	return zbar_scan_image(scn, img)
 }
 
 func (scn *Scanner) Destroy() {
-	zbar_image_scanner_destroy.Call(scn.handle)
-	scn.handle = 0
+	zbar_image_scanner_destroy(scn)
 }
 
 func (scn Scanner) Process(pix leptonica.Pix) []Code {

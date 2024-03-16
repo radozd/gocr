@@ -1,49 +1,34 @@
-//go:build windows
-
 package zbar
 
 // #include <stdlib.h>
 import "C"
-import "unsafe"
-
-type symbol uintptr
 
 func (img image) first() symbol {
-	sym, _, _ := zbar_image_first_symbol.Call(uintptr(img))
-	return symbol(sym)
+	return zbar_image_first_symbol(img)
 }
 
 func (sym symbol) next() symbol {
-	n, _, _ := zbar_symbol_next.Call(uintptr(sym))
-	return symbol(n)
+	return zbar_symbol_next(sym)
 }
 
 func (sym symbol) string() string {
-	text, _, _ := zbar_symbol_get_data.Call(uintptr(sym))
-	if text == 0 {
-		return ""
-	}
-	return C.GoString((*C.char)(unsafe.Pointer(text)))
+	return zbar_symbol_get_data(sym)
 }
 
 func (sym symbol) get_loc_size() int {
-	res, _, _ := zbar_symbol_get_loc_size.Call(uintptr(sym))
-	return int(res)
+	return zbar_symbol_get_loc_size(sym)
 }
 
 func (sym symbol) get_loc_x(idx int) int {
-	res, _, _ := zbar_symbol_get_loc_x.Call(uintptr(sym), uintptr(idx))
-	return int(res)
+	return zbar_symbol_get_loc_x(sym, idx)
 }
 
 func (sym symbol) get_loc_y(idx int) int {
-	res, _, _ := zbar_symbol_get_loc_y.Call(uintptr(sym), uintptr(idx))
-	return int(res)
+	return zbar_symbol_get_loc_y(sym, idx)
 }
 
 func (sym symbol) symbol_type() ZBAR_CODETYPE {
-	t, _, _ := zbar_symbol_get_type.Call(uintptr(sym))
-	return ZBAR_CODETYPE(t)
+	return zbar_symbol_get_type(sym)
 }
 
 func (sym symbol) get_rect() (int, int, int, int) {
@@ -72,7 +57,7 @@ func (sym symbol) get_rect() (int, int, int, int) {
 
 func (sym symbol) each(f func(Code)) {
 	s := sym
-	for s != 0 {
+	for s != nullSymbol {
 		x1, y1, x2, y2 := s.get_rect()
 
 		code := Code{

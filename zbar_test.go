@@ -1,5 +1,3 @@
-//go:build windows
-
 package gocr
 
 import (
@@ -11,7 +9,7 @@ import (
 
 func TestZBar(t *testing.T) {
 	pix := leptonica.NewPixFromFile("test.png")
-	if pix == 0 {
+	if pix == leptonica.NullPix {
 		t.Error("error loading pix from file")
 	}
 	defer pix.Destroy()
