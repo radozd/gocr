@@ -1,7 +1,5 @@
 package zbar
 
-// #include <stdlib.h>
-import "C"
 import (
 	"runtime"
 	"unsafe"

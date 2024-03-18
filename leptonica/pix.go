@@ -1,8 +1,5 @@
 package leptonica
 
-// #include <stdlib.h>
-import "C"
-
 import (
 	"errors"
 	"strconv"

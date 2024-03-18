@@ -1,8 +1,5 @@
 package zbar
 
-// #include <stdlib.h>
-import "C"
-
 func (img image) first() symbol {
 	return zbar_image_first_symbol(img)
 }
