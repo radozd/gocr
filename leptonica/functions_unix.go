@@ -24,6 +24,10 @@ func UnsafePix(pix Pix) uintptr {
 	return uintptr(unsafe.Pointer(pix.p))
 }
 
+func setMsgSeverity(level int) {
+	C.setMsgSeverity(C.l_int32(level))
+}
+
 func pixDestroy(pix *Pix) {
 	C.pixDestroy((**C.PIX)(unsafe.Pointer(pix)))
 	pix.p = nil

@@ -13,8 +13,9 @@ import (
 var (
 	leptonicaDll = syscall.NewLazyDLL("leptonica-1.84.0.dll")
 
-	_pixDestroy = leptonicaDll.NewProc("pixDestroy")
-	_lept_free  = leptonicaDll.NewProc("lept_free")
+	_setMsgSeverity = leptonicaDll.NewProc("setMsgSeverity")
+	_pixDestroy     = leptonicaDll.NewProc("pixDestroy")
+	_lept_free      = leptonicaDll.NewProc("lept_free")
 
 	_pixRead     = leptonicaDll.NewProc("pixRead")
 	_pixReadMem  = leptonicaDll.NewProc("pixReadMem")
@@ -53,6 +54,10 @@ const NullPix Pix = 0
 
 func UnsafePix(pix Pix) uintptr {
 	return uintptr(pix)
+}
+
+func setMsgSeverity(level int) {
+	_setMsgSeverity.Call(uintptr(C.int32_t(level)))
 }
 
 func pixDestroy(pix *Pix) {

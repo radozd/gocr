@@ -24,6 +24,16 @@ const (
 	SPIX
 )
 
+const (
+	L_SEVERITY_EXTERNAL = 0 /* Get the severity from the environment   */
+	L_SEVERITY_ALL      = 1 /* Lowest severity: print all messages     */
+	L_SEVERITY_DEBUG    = 2 /* Print debugging and higher messages     */
+	L_SEVERITY_INFO     = 3 /* Print informational and higher messages */
+	L_SEVERITY_WARNING  = 4 /* Print warning and higher messages       */
+	L_SEVERITY_ERROR    = 5 /* Print error and higher messages         */
+	L_SEVERITY_NONE     = 6 /* Highest severity: print no messages     */
+)
+
 type GrayCastMode int
 
 const (
