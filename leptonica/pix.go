@@ -49,6 +49,26 @@ func (pix Pix) FillRect(x int, y int, w int, h int, white bool) {
 	pixRasterop(pix, x, y, w, h, op, pix, x, y)
 }
 
+func (pix Pix) PaintThroughMask(mask Pix, color uint) {
+	pixPaintThroughMask(pix, mask, 0, 0, color)
+}
+
+func (pix Pix) Get1Copy(thresh int) Pix {
+	return pixConvertTo1(pix, thresh)
+}
+
+func (pix Pix) RemoveBorderConnComps(connectivity8 bool) Pix {
+	c := 4
+	if connectivity8 {
+		c = 8
+	}
+	return pixRemoveBorderConnComps(pix, c)
+}
+
+func (pix Pix) Xor(other Pix) {
+	pixXor(pix, pix, other)
+}
+
 func (pix Pix) GetRotated180Copy() Pix {
 	return pixRotate180(NullPix, pix)
 }
@@ -115,6 +135,16 @@ func (pix Pix) EnhancedCopy(opt EnhanceOptions) Pix {
 
 	if opt.Factor > 0 {
 		pixContrastTRC(enhanced, enhanced, opt.Factor)
+	}
+
+	if opt.RemoveBorders {
+		// https://github.com/DanBloomberg/leptonica/issues/590
+		pix2 := enhanced.Get1Copy(230)
+		pix3 := pix2.RemoveBorderConnComps(true)
+		pix2.Xor(pix3)
+		pix3.Destroy()
+		enhanced.PaintThroughMask(pix2, 0xffffffff)
+		pix2.Destroy()
 	}
 
 	return enhanced

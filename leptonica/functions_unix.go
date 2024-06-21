@@ -159,3 +159,15 @@ func pixGetDimensions(pixs Pix) (int, int, int) {
 func pixGetWpl(pixs Pix) int {
 	return int(C.pixGetWpl(pixs.p))
 }
+
+func pixConvertTo1(pixs Pix, threshold int) Pix {
+	return Pix{p: C.pixConvertTo1(pixs.p, C.l_int32(threshold))}
+}
+
+func pixRemoveBorderConnComps(pixs Pix, connectivity int) Pix {
+	return Pix{p: C.pixRemoveBorderConnComps(pixs.p, C.l_int32(connectivity))}
+}
+
+func pixXor(pixd Pix, pixs1 Pix, pixs2 Pix) {
+	C.pixXor(pixd.p, pixs1.p, pixs2.p)
+}

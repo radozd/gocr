@@ -46,6 +46,10 @@ var (
 	_pixGetData       = leptonicaDll.NewProc("pixGetData")
 	_pixGetDimensions = leptonicaDll.NewProc("pixGetDimensions")
 	_pixGetWpl        = leptonicaDll.NewProc("pixGetWpl")
+
+	_pixConvertTo1            = leptonicaDll.NewProc("pixConvertTo1")
+	_pixRemoveBorderConnComps = leptonicaDll.NewProc("pixRemoveBorderConnComps")
+	_pixXor                   = leptonicaDll.NewProc("pixXor")
 )
 
 type Pix uintptr
@@ -212,4 +216,18 @@ func pixGetDimensions(pix Pix) (int, int, int) {
 func pixGetWpl(pixs Pix) int {
 	code, _, _ := _pixGetWpl.Call(uintptr(pixs))
 	return int(code)
+}
+
+func pixConvertTo1(pixs Pix, threshold int) Pix {
+	pix, _, _ := _pixConvertTo1.Call(uintptr(pixs), uintptr(C.int32_t(threshold)))
+	return Pix(pix)
+}
+
+func pixRemoveBorderConnComps(pixs Pix, connectivity int) Pix {
+	pix, _, _ := _pixRemoveBorderConnComps.Call(uintptr(pixs), uintptr(C.int32_t(connectivity)))
+	return Pix(pix)
+}
+
+func pixXor(pixd Pix, pixs1 Pix, pixs2 Pix) {
+	_pixXor.Call(uintptr(pixd), uintptr(pixs1), uintptr(pixs2))
 }
