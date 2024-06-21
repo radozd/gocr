@@ -58,7 +58,7 @@ type EnhanceOptions struct {
 
 	Factor float32
 
-	RemoveBorders bool
+	RemoveBorders int
 }
 
 var DefaultEnhanceOptions = EnhanceOptions{
@@ -73,7 +73,7 @@ var DefaultEnhanceOptions = EnhanceOptions{
 	GammaMin:      20,
 	GammaMax:      240,
 	Factor:        0.8,
-	RemoveBorders: true,
+	RemoveBorders: 128,
 }
 
 type GrayOptions struct {

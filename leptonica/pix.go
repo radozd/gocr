@@ -137,9 +137,9 @@ func (pix Pix) EnhancedCopy(opt EnhanceOptions) Pix {
 		pixContrastTRC(enhanced, enhanced, opt.Factor)
 	}
 
-	if opt.RemoveBorders {
+	if opt.RemoveBorders > 0 {
 		// https://github.com/DanBloomberg/leptonica/issues/590
-		pix2 := enhanced.Get1Copy(230)
+		pix2 := enhanced.Get1Copy(opt.RemoveBorders)
 		pix3 := pix2.RemoveBorderConnComps(true)
 		pix2.Xor(pix3)
 		pix3.Destroy()
