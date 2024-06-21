@@ -57,20 +57,23 @@ type EnhanceOptions struct {
 	GammaMax int
 
 	Factor float32
+
+	RemoveBorders bool
 }
 
 var DefaultEnhanceOptions = EnhanceOptions{
-	TileX:    10,
-	TileY:    10,
-	Thresh:   40,
-	MinCount: 40,
-	BgVal:    250,
-	SmoothX:  4,
-	SmoothY:  4,
-	Gamma:    0.5,
-	GammaMin: 20,
-	GammaMax: 240,
-	Factor:   0.8,
+	TileX:         10,
+	TileY:         10,
+	Thresh:        40,
+	MinCount:      40,
+	BgVal:         250,
+	SmoothX:       4,
+	SmoothY:       4,
+	Gamma:         0.5,
+	GammaMin:      20,
+	GammaMax:      240,
+	Factor:        0.8,
+	RemoveBorders: true,
 }
 
 type GrayOptions struct {

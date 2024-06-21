@@ -107,6 +107,23 @@ func TestRotate(t *testing.T) {
 	pix2.WriteToFile("rotated.jpg", leptonica.JFIF_JPEG)
 }
 
+func TestRemoveBlackBorders(t *testing.T) {
+	pix := leptonica.NewPixFromFile("image_black_borders.jpg")
+	if pix == leptonica.NullPix {
+		t.Error("error loading pix from file")
+		return
+	}
+	defer pix.Destroy()
+
+	tmp := pix.GetGrayCopy(leptonica.GRAY_CAST_REMOVE_COLORS, leptonica.DefaultGrayOptions)
+	defer tmp.Destroy()
+
+	pix1 := tmp.EnhancedCopy(leptonica.DefaultEnhanceOptions)
+	defer pix1.Destroy()
+
+	pix1.WriteToFile("image_black_borders_removed.jpg", leptonica.JFIF_JPEG)
+}
+
 func TestEnhancePix(t *testing.T) {
 	pix := leptonica.NewPixFromFile("bad.jpg")
 	if pix == leptonica.NullPix {
