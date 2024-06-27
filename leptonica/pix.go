@@ -129,22 +129,22 @@ func (pix Pix) EnhancedCopy(opt EnhanceOptions) Pix {
 		enhanced = tmp
 	}
 
-	if opt.Gamma > 0 {
-		pixGammaTRC(enhanced, enhanced, opt.Gamma, opt.GammaMin, opt.GammaMax)
-	}
-
-	if opt.Factor > 0 {
-		pixContrastTRC(enhanced, enhanced, opt.Factor)
-	}
-
 	if opt.RemoveBorders > 0 {
 		// https://github.com/DanBloomberg/leptonica/issues/590
 		pix2 := enhanced.Get1Copy(opt.RemoveBorders)
 		pix3 := pix2.RemoveBorderConnComps(true)
 		pix2.Xor(pix3)
 		pix3.Destroy()
-		enhanced.PaintThroughMask(pix2, 0xffffffff)
+		enhanced.PaintThroughMask(pix2, uint(opt.BgVal)+256*uint(opt.BgVal)+256*256*uint(opt.BgVal))
 		pix2.Destroy()
+	}
+
+	if opt.Gamma > 0 {
+		pixGammaTRC(enhanced, enhanced, opt.Gamma, opt.GammaMin, opt.GammaMax)
+	}
+
+	if opt.Factor > 0 {
+		pixContrastTRC(enhanced, enhanced, opt.Factor)
 	}
 
 	return enhanced

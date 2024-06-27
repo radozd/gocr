@@ -73,7 +73,7 @@ var DefaultEnhanceOptions = EnhanceOptions{
 	GammaMin:      20,
 	GammaMax:      240,
 	Factor:        0.8,
-	RemoveBorders: 128,
+	RemoveBorders: 180,
 }
 
 type GrayOptions struct {
