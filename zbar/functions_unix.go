@@ -4,7 +4,7 @@
 package zbar
 
 // #include <stdlib.h>
-// #cgo LDFLAGS: libzbar64.a /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/lib/libiconv.tbd
+// #cgo LDFLAGS: libzbar64.a /Library/Developer/CommandLineTools/SDKs/MacOSX15.sdk/usr/lib/libiconv.tbd
 // #include <zbar.h>
 import "C"
 import "unsafe"

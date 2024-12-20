@@ -1,4 +1,4 @@
-package gocr
+package main
 
 import (
 	"testing"
