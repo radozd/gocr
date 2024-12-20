@@ -212,7 +212,7 @@ func TestRect(t *testing.T) {
 }
 
 func TestLines(t *testing.T) {
-	pix := leptonica.NewPixFromFile("lines-yes.jpg")
+	pix := leptonica.NewPixFromFile("b4affd2d20b7b97dd4fe91679a9e6363.tif")
 	if pix == leptonica.NullPix {
 		t.Error("error loading pix from file")
 		return
@@ -231,7 +231,7 @@ func TestLines(t *testing.T) {
 	tmp := deskew.GetGrayCopy(leptonica.GRAY_CAST_REMOVE_COLORS, opt2)
 	defer tmp.Destroy()
 
-	tmp.RemoveHorizLines(301, 3, 0)
+	tmp.RemoveLines(leptonica.DefaultLineOptions)
 
 	tmp.WriteToFile("lines-no.jpg", leptonica.JFIF_JPEG)
 }

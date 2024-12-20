@@ -49,24 +49,16 @@ func (pix Pix) FillRect(x int, y int, w int, h int, white bool) {
 	pixRasterop(pix, x, y, w, h, op, pix, x, y)
 }
 
-func (pix Pix) PaintThroughMask(mask Pix, color uint) {
+func (pix Pix) paintThroughMask(mask Pix, color uint) {
 	pixPaintThroughMask(pix, mask, 0, 0, color)
 }
 
-func (pix Pix) Get1Copy(thresh int) Pix {
-	return pixConvertTo1(pix, thresh)
-}
-
-func (pix Pix) RemoveBorderConnComps(connectivity8 bool) Pix {
+func (pix Pix) removeBorderConnComps(connectivity8 bool) Pix {
 	c := 4
 	if connectivity8 {
 		c = 8
 	}
 	return pixRemoveBorderConnComps(pix, c)
-}
-
-func (pix Pix) Xor(other Pix) {
-	pixXor(pix, pix, other)
 }
 
 func (pix Pix) GetRotated180Copy() Pix {
@@ -131,11 +123,11 @@ func (pix Pix) EnhancedCopy(opt EnhanceOptions) Pix {
 
 	if opt.RemoveBorders > 0 {
 		// https://github.com/DanBloomberg/leptonica/issues/590
-		pix2 := enhanced.Get1Copy(opt.RemoveBorders)
-		pix3 := pix2.RemoveBorderConnComps(true)
-		pix2.Xor(pix3)
+		pix2 := pixConvertTo1(enhanced, opt.RemoveBorders)
+		pix3 := pix2.removeBorderConnComps(true)
+		pixXor(pix2, pix2, pix3)
 		pix3.Destroy()
-		enhanced.PaintThroughMask(pix2, uint(opt.BgVal)+256*uint(opt.BgVal)+256*256*uint(opt.BgVal))
+		enhanced.paintThroughMask(pix2, uint(opt.BgVal)+256*uint(opt.BgVal)+256*256*uint(opt.BgVal))
 		pix2.Destroy()
 	}
 
@@ -177,20 +169,40 @@ func (pix Pix) GetRawGrayData() []byte {
 	return bytes
 }
 
-func (pix Pix) RemoveHorizLines(length int, erode int, dilate int) {
-	pix2 := pixCloseGray(pix, length, 1)
-	if erode > 0 {
-		pix3 := pixErodeGray(pix2, 1, erode)
-		pix2.Destroy()
-		pix2 = pix3
+func (pix Pix) RemoveLines(opt LineOptions) {
+	mask := NullPix
+
+	if opt.HLine > 0 {
+		tmp := pixCloseGray(pix, opt.HLine, 1)
+		if opt.Smooth > 0 {
+			er := pixErodeGray(tmp, 1, opt.Smooth)
+			tmp.Destroy()
+			tmp = er
+		}
+		binary := pixConvertTo1(tmp, opt.Thresh)
+		tmp.Destroy()
+
+		mask = binary
 	}
-	if dilate > 0 {
-		pix3 := pixDilateGray(pix2, 1, dilate)
-		pix2.Destroy()
-		pix2 = pix3
+
+	if opt.VLine > 0 {
+		tmp := pixCloseGray(pix, 1, opt.VLine)
+		if opt.Smooth > 0 {
+			er := pixErodeGray(tmp, opt.Smooth, 1)
+			tmp.Destroy()
+			tmp = er
+		}
+		binary := pixConvertTo1(tmp, opt.Thresh)
+		tmp.Destroy()
+
+		if mask == NullPix {
+			mask = binary
+		} else {
+			pixOr(mask, mask, binary)
+			binary.Destroy()
+		}
 	}
-	pix4 := pix2.Get1Copy(210)
-	pix2.Destroy()
-	pix.PaintThroughMask(pix4, 0xffffffff)
-	pix4.Destroy()
+
+	pix.paintThroughMask(mask, 0xffffffff)
+	mask.Destroy()
 }

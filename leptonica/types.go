@@ -91,3 +91,19 @@ var DefaultGrayOptions = GrayOptions{
 	ThreshDiff: 90,
 	MinDist:    2,
 }
+
+type LineOptions struct {
+	HLine int
+	VLine int
+
+	Thresh int
+	Smooth int
+}
+
+var DefaultLineOptions = LineOptions{
+	HLine: 301,
+	VLine: 201,
+
+	Thresh: 180,
+	Smooth: 3,
+}
