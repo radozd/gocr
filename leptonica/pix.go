@@ -203,6 +203,6 @@ func (pix Pix) RemoveLines(opt LineOptions) {
 		}
 	}
 
-	pix.paintThroughMask(mask, 0xffffffff)
+	pix.paintThroughMask(mask, uint(opt.BgVal)+256*uint(opt.BgVal)+256*256*uint(opt.BgVal))
 	mask.Destroy()
 }

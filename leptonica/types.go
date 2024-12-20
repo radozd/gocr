@@ -98,6 +98,8 @@ type LineOptions struct {
 
 	Thresh int
 	Smooth int
+
+	BgVal int
 }
 
 var DefaultLineOptions = LineOptions{
@@ -106,4 +108,6 @@ var DefaultLineOptions = LineOptions{
 
 	Thresh: 180,
 	Smooth: 3,
+
+	BgVal: 250,
 }
