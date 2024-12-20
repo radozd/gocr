@@ -179,3 +179,11 @@ func pixCloseGray(pixs Pix, hsize int, vsize int) Pix {
 func pixThresholdToValue(pixd Pix, pixs Pix, threshval int, setval int) Pix {
 	return Pix{p: C.pixThresholdToValue(pixd.p, pixs.p, C.int32_t(threshval), C.int32_t(setval))}
 }
+
+func pixErodeGray(pixs Pix, hsize int, vsize int) Pix {
+	return Pix{p: C.pixErodeGray(pixs.p, C.int32_t(hsize), C.int32_t(vsize))}
+}
+
+func pixDilateGray(pixs Pix, hsize int, vsize int) Pix {
+	return Pix{p: C.pixDilateGray(pixs.p, C.int32_t(hsize), C.int32_t(vsize))}
+}

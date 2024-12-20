@@ -51,8 +51,10 @@ var (
 	_pixRemoveBorderConnComps = leptonicaDll.NewProc("pixRemoveBorderConnComps")
 	_pixXor                   = leptonicaDll.NewProc("pixXor")
 
-	_pixCloseGray         = leptonicaDll.NewProc("pixCloseGray")
-	_pixThresholdToValue  = leptonicaDll.NewProc("pixThresholdToValue")
+	_pixCloseGray        = leptonicaDll.NewProc("pixCloseGray")
+	_pixThresholdToValue = leptonicaDll.NewProc("pixThresholdToValue")
+	_pixErodeGray        = leptonicaDll.NewProc("pixErodeGray")
+	_pixDilateGray       = leptonicaDll.NewProc("pixDilateGray")
 )
 
 type Pix uintptr
@@ -242,5 +244,15 @@ func pixCloseGray(pixs Pix, hsize int, vsize int) Pix {
 
 func pixThresholdToValue(pixd Pix, pixs Pix, threshval int, setval int) Pix {
 	pix, _, _ := _pixThresholdToValue.Call(uintptr(pixd), uintptr(pixs), uintptr(C.int32_t(threshval)), uintptr(C.int32_t(setval)))
+	return Pix(pix)
+}
+
+func pixErodeGray(pixs Pix, hsize int, vsize int) Pix {
+	pix, _, _ := _pixErodeGray.Call(uintptr(pixs), uintptr(C.int32_t(hsize)), uintptr(C.int32_t(vsize)))
+	return Pix(pix)
+}
+
+func pixDilateGray(pixs Pix, hsize int, vsize int) Pix {
+	pix, _, _ := _pixDilateGray.Call(uintptr(pixs), uintptr(C.int32_t(hsize)), uintptr(C.int32_t(vsize)))
 	return Pix(pix)
 }

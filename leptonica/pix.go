@@ -112,14 +112,6 @@ func (pix Pix) GetGrayCopy(mode GrayCastMode, opt GrayOptions) Pix {
 	return gray
 }
 
-func (pix Pix) RemoveHorizLines(length int) {
-	pix2 := pixCloseGray(pix, length, 1)
-	pix4 := pix2.Get1Copy(210)
-	pix2.Destroy()
-	pix.PaintThroughMask(pix4, 0xffffffff)
-	pix4.Destroy()
-}
-
 func (pix Pix) EnhancedCopy(opt EnhanceOptions) Pix {
 	var enhanced Pix
 
@@ -145,9 +137,6 @@ func (pix Pix) EnhancedCopy(opt EnhanceOptions) Pix {
 		pix3.Destroy()
 		enhanced.PaintThroughMask(pix2, uint(opt.BgVal)+256*uint(opt.BgVal)+256*256*uint(opt.BgVal))
 		pix2.Destroy()
-	}
-	if opt.RemoveLines > 0 {
-		enhanced.RemoveHorizLines(opt.RemoveLines)
 	}
 
 	if opt.Gamma > 0 {
@@ -186,4 +175,22 @@ func (pix Pix) GetRawGrayData() []byte {
 	}
 
 	return bytes
+}
+
+func (pix Pix) RemoveHorizLines(length int, erode int, dilate int) {
+	pix2 := pixCloseGray(pix, length, 1)
+	if erode > 0 {
+		pix3 := pixErodeGray(pix2, 1, erode)
+		pix2.Destroy()
+		pix2 = pix3
+	}
+	if dilate > 0 {
+		pix3 := pixDilateGray(pix2, 1, dilate)
+		pix2.Destroy()
+		pix2 = pix3
+	}
+	pix4 := pix2.Get1Copy(210)
+	pix2.Destroy()
+	pix.PaintThroughMask(pix4, 0xffffffff)
+	pix4.Destroy()
 }

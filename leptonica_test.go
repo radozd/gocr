@@ -231,7 +231,7 @@ func TestLines(t *testing.T) {
 	tmp := deskew.GetGrayCopy(leptonica.GRAY_CAST_REMOVE_COLORS, opt2)
 	defer tmp.Destroy()
 
-	tmp.RemoveHorizLines(301)
+	tmp.RemoveHorizLines(301, 3, 0)
 
 	tmp.WriteToFile("lines-no.jpg", leptonica.JFIF_JPEG)
 }
