@@ -3,7 +3,6 @@ package leptonica
 import (
 	"errors"
 	"strconv"
-	"unsafe"
 )
 
 func NewPixFromFile(filename string) Pix {
@@ -33,40 +32,29 @@ func (pix Pix) GetDimensions() (int, int, int) {
 	return pixGetDimensions(pix)
 }
 
+func (pix Pix) Copy() Pix {
+	return pixCopy(NullPix, pix)
+}
+
 func (pix Pix) GetScaledCopy(width int, height int) Pix {
 	return pixScaleToSize(pix, width, height)
 }
 
-func (pix Pix) FillRect(x int, y int, w int, h int, white bool) {
-	PIX_SET := 15
-	PIX_CLR := 0
+func (pix Pix) FillRect(x int, y int, w int, h int, black bool) {
+	const PIX_SET int = 15
+	const PIX_CLR int = 0
+
 	var op int
-	if white {
+	if black {
 		op = PIX_SET
 	} else {
 		op = PIX_CLR
 	}
-	pixRasterop(pix, x, y, w, h, op, pix, x, y)
+	pixRasterop(pix, x, y, w, h, op, NullPix, 0, 0)
 }
 
-func (pix Pix) PaintThroughMask(mask Pix, color uint) {
-	pixPaintThroughMask(pix, mask, 0, 0, color)
-}
-
-func (pix Pix) Get1Copy(thresh int) Pix {
-	return pixConvertTo1(pix, thresh)
-}
-
-func (pix Pix) RemoveBorderConnComps(connectivity8 bool) Pix {
-	c := 4
-	if connectivity8 {
-		c = 8
-	}
-	return pixRemoveBorderConnComps(pix, c)
-}
-
-func (pix Pix) Xor(other Pix) {
-	pixXor(pix, pix, other)
+func (pix Pix) pixSetMasked(mask Pix, color uint) {
+	pixSetMasked(pix, mask, color)
 }
 
 func (pix Pix) GetRotated180Copy() Pix {
@@ -83,96 +71,4 @@ func (pix Pix) GetDeskewedCopy(redsearch int) Pix {
 
 func (pix Pix) GetDeskewedCopyAndAngle(redsearch int) (Pix, float32) {
 	return pixFindSkewAndDeskew(pix, redsearch)
-}
-
-func (pix Pix) GetGrayCopy(mode GrayCastMode, opt GrayOptions) Pix {
-	var gray Pix
-
-	_, _, d := pix.GetDimensions()
-	if d == 32 {
-		gray = pixConvertRGBToGrayFast(pix)
-		if mode != GRAY_SIMPLE {
-			var mask Pix
-			if mode == GRAY_CAST_KEEP_ONLY_COLORS {
-				mask = pixMaskOverGrayPixels(pix, opt.WhitePoint, opt.Saturation)
-			} else if mode == GRAY_CAST_REMOVE_COLORS {
-				mask = pixMaskOverGrayPixels(pix, opt.WhitePoint, opt.Saturation)
-				pixInvert(mask, mask)
-			} else if mode == GRAY_CAST_REMOVE_COLORS_2 {
-				mask = pixMaskOverColorPixels(pix, opt.ThreshDiff, opt.MinDist)
-			}
-			pixPaintThroughMask(gray, mask, 0, 0, uint(opt.WhitePoint))
-			mask.Destroy()
-		}
-	} else if d != 8 {
-		gray = pixConvertTo8(pix, 0)
-	} else {
-		gray = pixCopy(NullPix, pix)
-	}
-	return Pix(gray)
-}
-
-func (pix Pix) EnhancedCopy(opt EnhanceOptions) Pix {
-	var enhanced Pix
-
-	_, _, d := pix.GetDimensions()
-	if d != 8 && d != 32 {
-		enhanced = pixConvertTo8(pix, 0)
-	} else {
-		enhanced = pixCopy(NullPix, pix)
-	}
-
-	if opt.TileX > 0 {
-		tmp := pixBackgroundNorm(enhanced, NullPix, NullPix, opt.TileX, opt.TileY,
-			opt.Thresh, opt.MinCount, opt.BgVal, opt.SmoothX, opt.SmoothY)
-		enhanced.Destroy()
-		enhanced = tmp
-	}
-
-	if opt.RemoveBorders > 0 {
-		// https://github.com/DanBloomberg/leptonica/issues/590
-		pix2 := enhanced.Get1Copy(opt.RemoveBorders)
-		pix3 := pix2.RemoveBorderConnComps(true)
-		pix2.Xor(pix3)
-		pix3.Destroy()
-		enhanced.PaintThroughMask(pix2, uint(opt.BgVal)+256*uint(opt.BgVal)+256*256*uint(opt.BgVal))
-		pix2.Destroy()
-	}
-
-	if opt.Gamma > 0 {
-		pixGammaTRC(enhanced, enhanced, opt.Gamma, opt.GammaMin, opt.GammaMax)
-	}
-
-	if opt.Factor > 0 {
-		pixContrastTRC(enhanced, enhanced, opt.Factor)
-	}
-
-	return enhanced
-}
-
-func (pix Pix) GetRawGrayData() []byte {
-	gray := pix.GetGrayCopy(GRAY_CAST_REMOVE_COLORS, DefaultGrayOptions)
-	if gray == NullPix {
-		return nil
-	}
-	defer gray.Destroy()
-
-	w, h, _ := gray.GetDimensions()
-	wpl := pixGetWpl(gray)
-	raw := pixGetData(gray)
-
-	rowlen := 4 * int(wpl)
-	pixels := unsafe.Slice((*byte)(unsafe.Pointer(raw)), rowlen*h)
-
-	bytes := make([]byte, w*h)
-	for i := 0; i < h; i++ {
-		ofs := i * rowlen
-		line := pixels[ofs : ofs+rowlen]
-		for j := 0; j < w; j++ {
-			val := line[j^3]
-			bytes[w*i+j] = val
-		}
-	}
-
-	return bytes
 }
