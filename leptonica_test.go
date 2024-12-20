@@ -210,3 +210,28 @@ func TestRect(t *testing.T) {
 
 	pix.WriteToFile("rect.jpg", leptonica.JFIF_JPEG)
 }
+
+func TestLines(t *testing.T) {
+	pix := leptonica.NewPixFromFile("lines-yes.jpg")
+	if pix == leptonica.NullPix {
+		t.Error("error loading pix from file")
+		return
+	}
+	defer pix.Destroy()
+
+	deskew := pix.GetDeskewedCopy(0)
+	defer deskew.Destroy()
+
+	var opt2 = leptonica.GrayOptions{
+		Saturation: 90,
+		ThreshDiff: 90, //110, //40,
+		MinDist:    2,
+		WhitePoint: 250,
+	}
+	tmp := deskew.GetGrayCopy(leptonica.GRAY_CAST_REMOVE_COLORS, opt2)
+	defer tmp.Destroy()
+
+	tmp.RemoveHorizLines(301)
+
+	tmp.WriteToFile("lines-no.jpg", leptonica.JFIF_JPEG)
+}

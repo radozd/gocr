@@ -50,6 +50,9 @@ var (
 	_pixConvertTo1            = leptonicaDll.NewProc("pixConvertTo1")
 	_pixRemoveBorderConnComps = leptonicaDll.NewProc("pixRemoveBorderConnComps")
 	_pixXor                   = leptonicaDll.NewProc("pixXor")
+
+	_pixCloseGray         = leptonicaDll.NewProc("pixCloseGray")
+	_pixThresholdToValue  = leptonicaDll.NewProc("pixThresholdToValue")
 )
 
 type Pix uintptr
@@ -230,4 +233,14 @@ func pixRemoveBorderConnComps(pixs Pix, connectivity int) Pix {
 
 func pixXor(pixd Pix, pixs1 Pix, pixs2 Pix) {
 	_pixXor.Call(uintptr(pixd), uintptr(pixs1), uintptr(pixs2))
+}
+
+func pixCloseGray(pixs Pix, hsize int, vsize int) Pix {
+	pix, _, _ := _pixCloseGray.Call(uintptr(pixs), uintptr(C.int32_t(hsize)), uintptr(C.int32_t(vsize)))
+	return Pix(pix)
+}
+
+func pixThresholdToValue(pixd Pix, pixs Pix, threshval int, setval int) Pix {
+	pix, _, _ := _pixThresholdToValue.Call(uintptr(pixd), uintptr(pixs), uintptr(C.int32_t(threshval)), uintptr(C.int32_t(setval)))
+	return Pix(pix)
 }

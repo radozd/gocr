@@ -171,3 +171,11 @@ func pixRemoveBorderConnComps(pixs Pix, connectivity int) Pix {
 func pixXor(pixd Pix, pixs1 Pix, pixs2 Pix) {
 	C.pixXor(pixd.p, pixs1.p, pixs2.p)
 }
+
+func pixCloseGray(pixs Pix, hsize int, vsize int) Pix {
+	return Pix{p: C.pixCloseGray(pixs.p, C.int32_t(hsize), C.int32_t(vsize))}
+}
+
+func pixThresholdToValue(pixd Pix, pixs Pix, threshval int, setval int) Pix {
+	return Pix{p: C.pixThresholdToValue(pixd.p, pixs.p, C.int32_t(threshval), C.int32_t(setval))}
+}

@@ -7,14 +7,8 @@ import (
 	"github.com/radozd/gocr/leptonica"
 )
 
-const ZBAR_CFG_ENABLE int = 0
-
 func NewScanner() Scanner {
 	return zbar_image_scanner_create()
-}
-
-func (scn Scanner) setConfig(symbology int, config int, value int) {
-	zbar_image_scanner_set_config(scn, symbology, config, value)
 }
 
 func (scn Scanner) scan(img image) bool {
