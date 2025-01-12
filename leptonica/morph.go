@@ -91,14 +91,14 @@ func (box Box) overlap(x2 int, y2 int, w2 int, h2 int) bool {
 	return true
 }
 
-func boxWeight(w int, h int) int {
+var DefaultBoxWeight = func(w int, h int) int {
 	return (w*h + w + h) / 2
 }
 
 func (box Box) weightedGeometry() (x int, y int, w int, h int) {
 	x, y, w, h = boxGetGeometry(box)
 
-	delta := boxWeight(w, h)
+	delta := DefaultBoxWeight(w, h)
 	x -= delta
 	y -= delta
 	w += 2 * delta
@@ -139,7 +139,7 @@ func (pix Pix) MaskSpecks(thresh int, max int, weight int) Pix {
 				grid[row][col] = append(grid[row][col], i)
 			}
 		}
-		weights[i] = boxWeight(w, h)
+		weights[i] = DefaultBoxWeight(w, h)
 
 		boxDestroy(&box)
 	}
@@ -166,10 +166,10 @@ func (pix Pix) MaskSpecks(thresh int, max int, weight int) Pix {
 		for j := range indices {
 			if i != j {
 				box_j := boxaGetBox(boxes, j, L_CLONE)
-				overlap := box_j.overlap(x, y, w, h)
+				o := box_j.overlap(x, y, w, h)
 				boxDestroy(&box_j)
 
-				if overlap {
+				if o {
 					if weights[i]*weights[j] > weight {
 						ok = false
 						break
@@ -213,10 +213,10 @@ func (pix Pix) MaskAll(opt MaskOptions) {
 
 	//fmt.Printf("squares = %v\nbars = %v\nlines = %v\nnoise = %v\n\n", t2.Sub(t1), t3.Sub(t2), t4.Sub(t3), t5.Sub(t4))
 
-	//mask1.WriteToFile("b_mask_1.png", PNG)
-	//mask2.WriteToFile("b_mask_2.png", PNG)
-	//mask3.WriteToFile("b_mask_3.png", PNG)
-	//mask4.WriteToFile("b_mask_4.png", PNG)
+	mask1.WriteToFile("b_mask_1.png", PNG)
+	mask2.WriteToFile("b_mask_2.png", PNG)
+	mask3.WriteToFile("b_mask_3.png", PNG)
+	mask4.WriteToFile("b_mask_4.png", PNG)
 
 	//pixOr(mask1, mask1, mask2)
 	//pixOr(mask1, mask1, mask3)
