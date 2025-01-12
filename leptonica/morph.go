@@ -225,10 +225,10 @@ func (pix Pix) MaskAll(opt MaskOptions) {
 
 	//fmt.Printf("squares = %v\nbars = %v\nlines = %v\nnoise = %v\n\n", t2.Sub(t1), t3.Sub(t2), t4.Sub(t3), t5.Sub(t4))
 
-	//mask1.WriteToFile("b_mask_1.png", PNG)
-	//mask2.WriteToFile("b_mask_2.png", PNG)
-	//mask3.WriteToFile("b_mask_3.png", PNG)
-	//mask4.WriteToFile("b_mask_4.png", PNG)
+	mask1.WriteToFile("b_mask_1.png", PNG)
+	mask2.WriteToFile("b_mask_2.png", PNG)
+	mask3.WriteToFile("b_mask_3.png", PNG)
+	mask4.WriteToFile("b_mask_4.png", PNG)
 
 	//pixOr(mask1, mask1, mask2)
 	//pixOr(mask1, mask1, mask3)
