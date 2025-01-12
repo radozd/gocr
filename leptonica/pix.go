@@ -44,8 +44,10 @@ func (pix Pix) FillRect(x int, y int, w int, h int, black bool) {
 	const PIX_SET int = 15
 	const PIX_CLR int = 0
 
+	_, _, d := pixGetDimensions(pix)
+
 	var op int
-	if black {
+	if black != (d != 1) {
 		op = PIX_SET
 	} else {
 		op = PIX_CLR

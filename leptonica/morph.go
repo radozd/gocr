@@ -91,14 +91,14 @@ func (box Box) overlap(x2 int, y2 int, w2 int, h2 int) bool {
 	return true
 }
 
-func boxWeight(w int, h int) int {
+var DefaultBoxWeight = func(w int, h int) int {
 	return (w*h + w + h) / 2
 }
 
 func (box Box) weightedGeometry() (x int, y int, w int, h int) {
 	x, y, w, h = boxGetGeometry(box)
 
-	delta := boxWeight(w, h)
+	delta := DefaultBoxWeight(w, h)
 	x -= delta
 	y -= delta
 	w += 2 * delta
@@ -139,7 +139,7 @@ func (pix Pix) MaskSpecks(thresh int, max int, weight int) Pix {
 				grid[row][col] = append(grid[row][col], i)
 			}
 		}
-		weights[i] = boxWeight(w, h)
+		weights[i] = DefaultBoxWeight(w, h)
 
 		boxDestroy(&box)
 	}
@@ -152,6 +152,18 @@ func (pix Pix) MaskSpecks(thresh int, max int, weight int) Pix {
 
 		box_i := boxaGetBox(boxes, i, L_CLONE)
 		x, y, w, h := box_i.weightedGeometry()
+		if x < 0 {
+			x = 0
+		}
+		if y < 0 {
+			y = 0
+		}
+		if x+w > width {
+			w = width - x
+		}
+		if y+h > height {
+			h = height - y
+		}
 
 		indices := make(map[int]bool)
 		for row := y / grid_y; row <= (y+h)/grid_y; row++ {
@@ -166,10 +178,10 @@ func (pix Pix) MaskSpecks(thresh int, max int, weight int) Pix {
 		for j := range indices {
 			if i != j {
 				box_j := boxaGetBox(boxes, j, L_CLONE)
-				overlap := box_j.overlap(x, y, w, h)
+				o := box_j.overlap(x, y, w, h)
 				boxDestroy(&box_j)
 
-				if overlap {
+				if o {
 					if weights[i]*weights[j] > weight {
 						ok = false
 						break
