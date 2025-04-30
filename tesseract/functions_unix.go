@@ -99,6 +99,10 @@ func tessResultIteratorGetPageIterator(handle TessResultIterator) TessPageIterat
 	return TessPageIterator{it: C.TessResultIteratorGetPageIterator(handle.it)}
 }
 
+func tessResultIteratorCopy(handle TessResultIterator) TessResultIterator {
+	return TessResultIterator{it: C.TessResultIteratorCopy(handle.it)}
+}
+
 func tessResultIteratorDelete(handle TessResultIterator) {
 	C.TessResultIteratorDelete(handle.it)
 }
@@ -116,10 +120,6 @@ func tessResultIteratorConfidence(handle TessResultIterator, level TessPageItera
 }
 
 /* Page iterator */
-func tessPageIteratorDelete(handle TessPageIterator) {
-	C.TessPageIteratorDelete(handle.it)
-}
-
 func tessPageIteratorBegin(handle TessPageIterator) {
 	C.TessPageIteratorBegin(handle.it)
 }

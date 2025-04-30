@@ -7,12 +7,20 @@ import (
 	"unsafe"
 )
 
-func (resIt TessResultIterator) GetPageIterator() TessPageIterator {
+func (resIt TessResultIterator) AsPageIterator() TessPageIterator {
 	return tessResultIteratorGetPageIterator(resIt)
+}
+
+func (resIt TessResultIterator) Copy() TessResultIterator {
+	return tessResultIteratorCopy(resIt)
 }
 
 func (resIt TessResultIterator) Delete() {
 	tessResultIteratorDelete(resIt)
+}
+
+func (resIt TessResultIterator) Next(level TessPageIteratorLevel) {
+	tessResultIteratorNext(resIt, level)
 }
 
 func (resIt TessResultIterator) GetUTF8Text(level TessPageIteratorLevel) (string, float32) {
@@ -25,7 +33,6 @@ func (resIt TessResultIterator) GetUTF8Text(level TessPageIteratorLevel) (string
 	tessDeleteText(text)
 
 	confidence := tessResultIteratorConfidence(resIt, level)
-	//c := math.Float32frombits(uint32(confidence))
 
 	return res, confidence
 }
@@ -33,10 +40,6 @@ func (resIt TessResultIterator) GetUTF8Text(level TessPageIteratorLevel) (string
 // /////////////////////////////////////
 func (pageIt TessPageIterator) Begin() {
 	tessPageIteratorBegin(pageIt)
-}
-
-func (pageIt TessPageIterator) BoundingBox(level TessPageIteratorLevel) (int, int, int, int) {
-	return tessPageIteratorBoundingBox(pageIt, level)
 }
 
 func (pageIt TessPageIterator) IsAtBeginningOf(level TessPageIteratorLevel) bool {
@@ -49,4 +52,8 @@ func (pageIt TessPageIterator) IsAtFinalElement(level TessPageIteratorLevel, ele
 
 func (pageIt TessPageIterator) Next(level TessPageIteratorLevel) bool {
 	return tessPageIteratorNext(pageIt, level)
+}
+
+func (pageIt TessPageIterator) BoundingBox(level TessPageIteratorLevel) (int, int, int, int) {
+	return tessPageIteratorBoundingBox(pageIt, level)
 }
