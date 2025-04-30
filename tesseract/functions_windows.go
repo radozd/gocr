@@ -33,21 +33,19 @@ var (
 	/* Result iterator */
 	_tessBaseAPIGetIterator            = tessDll.NewProc("TessBaseAPIGetIterator")
 	_tessResultIteratorGetPageIterator = tessDll.NewProc("TessResultIteratorGetPageIterator")
-
-	_tessPageIteratorOrientation = tessDll.NewProc("TessPageIteratorOrientation")
-
-	_tessResultIteratorDelete      = tessDll.NewProc("TessResultIteratorDelete")
-	_tessResultIteratorNext        = tessDll.NewProc("TessResultIteratorNext")
-	_tessResultIteratorGetUTF8Text = tessDll.NewProc("TessResultIteratorGetUTF8Text")
-	_tessResultIteratorConfidence  = tessDll.NewProc("TessResultIteratorConfidence")
+	_tessResultIteratorCopy            = tessDll.NewProc("TessResultIteratorCopy")
+	_tessResultIteratorDelete          = tessDll.NewProc("TessResultIteratorDelete")
+	_tessResultIteratorNext            = tessDll.NewProc("TessResultIteratorNext")
+	_tessResultIteratorGetUTF8Text     = tessDll.NewProc("TessResultIteratorGetUTF8Text")
+	_tessResultIteratorConfidence      = tessDll.NewProc("TessResultIteratorConfidence")
 
 	/* Page iterator */
-	_tessPageIteratorDelete           = tessDll.NewProc("TessPageIteratorDelete")
 	_tessPageIteratorBegin            = tessDll.NewProc("TessPageIteratorBegin")
 	_tessPageIteratorNext             = tessDll.NewProc("TessPageIteratorNext")
 	_tessPageIteratorIsAtBeginningOf  = tessDll.NewProc("TessPageIteratorIsAtBeginningOf")
 	_tessPageIteratorIsAtFinalElement = tessDll.NewProc("TessPageIteratorIsAtFinalElement")
 	_tessPageIteratorBoundingBox      = tessDll.NewProc("TessPageIteratorBoundingBox")
+	_tessPageIteratorOrientation      = tessDll.NewProc("TessPageIteratorOrientation")
 )
 
 type TessResultIterator struct {
@@ -142,6 +140,11 @@ func tessResultIteratorGetPageIterator(handle TessResultIterator) TessPageIterat
 	return TessPageIterator{it: h}
 }
 
+func tessResultIteratorCopy(handle TessResultIterator) TessResultIterator {
+	h, _, _ := _tessResultIteratorCopy.Call(handle.it)
+	return TessResultIterator{it: h}
+}
+
 func tessResultIteratorDelete(handle TessResultIterator) {
 	_tessResultIteratorDelete.Call(handle.it)
 }
@@ -164,10 +167,6 @@ func tessResultIteratorConfidence(handle TessResultIterator, level TessPageItera
 }
 
 /* Page iterator */
-func tessPageIteratorDelete(handle TessPageIterator) {
-	_tessPageIteratorDelete.Call(handle.it)
-}
-
 func tessPageIteratorBegin(handle TessPageIterator) {
 	_tessPageIteratorBegin.Call(handle.it)
 }

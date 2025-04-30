@@ -17,6 +17,7 @@ const (
 	RIL_TEXTLINE
 	RIL_WORD
 	RIL_SYMBOL
+	RIL_DYNAMIC TessPageIteratorLevel = 100
 )
 
 type TessOcrEngineMode int

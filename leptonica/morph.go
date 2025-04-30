@@ -209,6 +209,10 @@ func (pix Pix) MaskSpecks(thresh int, max int, weight int) Pix {
 }
 
 func (pix Pix) MaskAll(opt MaskOptions) {
+	if opt.Thresh == 0 {
+		return
+	}
+
 	//t1 := time.Now()
 	mask1 := pix.MaskSquares(opt.Thresh, opt.SqrBlock, opt.SqrMin, opt.SqrMax)
 	pix.pixSetMasked(mask1, 0xFFFFFFFF)
