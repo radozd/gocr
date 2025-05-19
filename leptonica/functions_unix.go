@@ -203,6 +203,10 @@ func pixAnd(pixd Pix, pixs1 Pix, pixs2 Pix) {
 	C.pixAnd(pixd.p, pixs1.p, pixs2.p)
 }
 
+func pixBlendInRect(pixs Pix, box Box, val int, fract float32) {
+	C.pixBlendInRect(pixs.p, box.p, C.l_uint32(val), C.float(fract))
+}
+
 ////////////////////////////////////////////////////
 
 func pixOpenBrick(pixd Pix, pixs Pix, hsize int, vsize int) Pix {
@@ -229,6 +233,10 @@ func pixSobelEdgeFilter(pixs Pix, orientflag int) Pix {
 
 type Box struct {
 	p *C.BOX
+}
+
+func boxCreate(x, y, w, h int) Box {
+	return Box{p: C.boxCreate(C.int32_t(x), C.int32_t(y), C.int32_t(w), C.int32_t(h))}
 }
 
 func boxDestroy(box *Box) {

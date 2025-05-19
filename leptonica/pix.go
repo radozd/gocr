@@ -55,6 +55,14 @@ func (pix Pix) FillRect(x int, y int, w int, h int, black bool) {
 	pixRasterop(pix, x, y, w, h, op, NullPix, 0, 0)
 }
 
+func (pix Pix) BlendRect(x int, y int, w int, h int, color int, fract float32) {
+	//_, _, d := pixGetDimensions(pix)
+
+	box := boxCreate(x, y, w, h)
+	pixBlendInRect(pix, box, color, fract)
+	boxDestroy(&box)
+}
+
 func (pix Pix) pixSetMasked(mask Pix, color uint) {
 	pixSetMasked(pix, mask, color)
 }

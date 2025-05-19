@@ -47,12 +47,13 @@ var (
 	_pixConvertTo8           = leptonicaDll.NewProc("pixConvertTo8")
 	_pixConvertTo1           = leptonicaDll.NewProc("pixConvertTo1")
 
-	_pixCopy     = leptonicaDll.NewProc("pixCopy")
-	_pixInvert   = leptonicaDll.NewProc("pixInvert")
-	_pixRasterop = leptonicaDll.NewProc("pixRasterop")
-	_pixOr       = leptonicaDll.NewProc("pixOr")
-	_pixXor      = leptonicaDll.NewProc("pixXor")
-	_pixAnd      = leptonicaDll.NewProc("pixAnd")
+	_pixCopy        = leptonicaDll.NewProc("pixCopy")
+	_pixInvert      = leptonicaDll.NewProc("pixInvert")
+	_pixRasterop    = leptonicaDll.NewProc("pixRasterop")
+	_pixOr          = leptonicaDll.NewProc("pixOr")
+	_pixXor         = leptonicaDll.NewProc("pixXor")
+	_pixAnd         = leptonicaDll.NewProc("pixAnd")
+	_pixBlendInRect = leptonicaDll.NewProc("pixBlendInRect")
 
 	_pixOpenBrick       = leptonicaDll.NewProc("pixOpenBrick")
 	_pixCloseBrick      = leptonicaDll.NewProc("pixCloseBrick")
@@ -60,6 +61,7 @@ var (
 	_pixDilateBrick     = leptonicaDll.NewProc("pixDilateBrick")
 	_pixSobelEdgeFilter = leptonicaDll.NewProc("pixSobelEdgeFilter")
 
+	_boxCreate      = leptonicaDll.NewProc("boxCreate")
 	_boxDestroy     = leptonicaDll.NewProc("boxDestroy")
 	_boxGetGeometry = leptonicaDll.NewProc("boxGetGeometry")
 	_boxSetGeometry = leptonicaDll.NewProc("boxSetGeometry")
@@ -284,6 +286,10 @@ func pixAnd(pixd Pix, pixs1 Pix, pixs2 Pix) {
 	_pixAnd.Call(uintptr(pixd), uintptr(pixs1), uintptr(pixs2))
 }
 
+func pixBlendInRect(pixs Pix, box Box, val int, fract float32) {
+	_pixBlendInRect.Call(uintptr(pixs), uintptr(box), uintptr(val), uintptr(math.Float32bits(fract)))
+}
+
 ////////////////////////////////////////////////////
 
 func pixOpenBrick(pixd Pix, pixs Pix, hsize int, vsize int) Pix {
@@ -315,8 +321,9 @@ func pixSobelEdgeFilter(pixs Pix, orientflag int) Pix {
 
 type Box uintptr
 
-func UnsafeBox(box Box) uintptr {
-	return uintptr(box)
+func boxCreate(x, y, w, h int) Box {
+	box, _, _ := _boxCreate.Call(uintptr(x), uintptr(y), uintptr(w), uintptr(h))
+	return Box(box)
 }
 
 func boxDestroy(box *Box) {
