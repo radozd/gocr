@@ -49,18 +49,18 @@ var (
 )
 
 type TessResultIterator struct {
-	it uintptr
+	it unsafe.Pointer
 }
 
 type TessPageIterator struct {
-	it uintptr
+	it unsafe.Pointer
 }
 
 type Api struct {
-	handle uintptr
+	handle unsafe.Pointer
 }
 
-var NullApi Api = Api{handle: 0}
+var NullApi Api = Api{handle: nil}
 
 func tessBaseAPICreate() Api {
 	h, _, _ := _tessBaseAPICreate.Call()
@@ -68,15 +68,15 @@ func tessBaseAPICreate() Api {
 		return Api{}
 	}
 
-	return Api{handle: h}
+	return Api{handle: unsafe.Pointer(h)}
 }
 
 func tessBaseAPIEnd(api Api) {
-	_tessBaseAPIEnd.Call(api.handle)
+	_tessBaseAPIEnd.Call(uintptr(api.handle))
 }
 
 func tessBaseAPIDelete(api Api) {
-	_tessBaseAPIDelete.Call(api.handle)
+	_tessBaseAPIDelete.Call(uintptr(api.handle))
 }
 
 func tessBaseAPIInit2(api Api, datapath string, lang string, mode TessOcrEngineMode) {
@@ -86,15 +86,15 @@ func tessBaseAPIInit2(api Api, datapath string, lang string, mode TessOcrEngineM
 	cLang := C.CString(lang)
 	defer C.free(unsafe.Pointer(cLang))
 
-	_tessBaseAPIInit2.Call(api.handle, uintptr(unsafe.Pointer(cDatapath)), uintptr(unsafe.Pointer(cLang)), uintptr(mode))
+	_tessBaseAPIInit2.Call(uintptr(api.handle), uintptr(unsafe.Pointer(cDatapath)), uintptr(unsafe.Pointer(cLang)), uintptr(mode))
 }
 
 func tessBaseAPISetPageSegMode(api Api, mode TessPageSegMode) {
-	_tessBaseAPISetPageSegMode.Call(api.handle, uintptr(mode))
+	_tessBaseAPISetPageSegMode.Call(uintptr(api.handle), uintptr(mode))
 }
 
 func tessBaseAPISetImage2(api Api, pix leptonica.Pix) {
-	_tessBaseAPISetImage2.Call(api.handle, leptonica.UnsafePix(pix))
+	_tessBaseAPISetImage2.Call(uintptr(api.handle), leptonica.UnsafePix(pix))
 }
 
 /* Utility */
@@ -105,7 +105,7 @@ func tessBaseAPISetVariable(api Api, name string, value string) bool {
 	cValue := C.CString(value)
 	defer C.free(unsafe.Pointer(cValue))
 
-	code, _, _ := _tessBaseAPISetVariable.Call(api.handle, uintptr(unsafe.Pointer(cName)), uintptr(unsafe.Pointer(cValue)))
+	code, _, _ := _tessBaseAPISetVariable.Call(uintptr(api.handle), uintptr(unsafe.Pointer(cName)), uintptr(unsafe.Pointer(cValue)))
 	return code != 0
 }
 
@@ -115,52 +115,52 @@ func tessDeleteText(text *C.char) {
 
 /* Whole text */
 func tessBaseAPIRecognize(api Api) int {
-	code, _, _ := _tessBaseAPIRecognize.Call(api.handle, 0)
+	code, _, _ := _tessBaseAPIRecognize.Call(uintptr(api.handle), 0)
 	return int(code)
 }
 
 func tessBaseAPIGetUTF8Text(api Api) *C.char {
-	text, _, _ := _tessBaseAPIGetUTF8Text.Call(api.handle)
+	text, _, _ := _tessBaseAPIGetUTF8Text.Call(uintptr(api.handle))
 	return (*C.char)(unsafe.Pointer(text))
 }
 
 func tessBaseAPIGetHOCRText(api Api, page_number int) *C.char {
-	text, _, _ := _tessBaseAPIGetHOCRText.Call(api.handle, uintptr(page_number))
+	text, _, _ := _tessBaseAPIGetHOCRText.Call(uintptr(api.handle), uintptr(page_number))
 	return (*C.char)(unsafe.Pointer(text))
 }
 
 /* Result iterator */
 func tessBaseAPIGetIterator(api Api) TessResultIterator {
-	h, _, _ := _tessBaseAPIGetIterator.Call(api.handle)
-	return TessResultIterator{it: h}
+	h, _, _ := _tessBaseAPIGetIterator.Call(uintptr(api.handle))
+	return TessResultIterator{it: unsafe.Pointer(h)}
 }
 
 func tessResultIteratorGetPageIterator(handle TessResultIterator) TessPageIterator {
-	h, _, _ := _tessResultIteratorGetPageIterator.Call(handle.it)
-	return TessPageIterator{it: h}
+	h, _, _ := _tessResultIteratorGetPageIterator.Call(uintptr(handle.it))
+	return TessPageIterator{it: unsafe.Pointer(h)}
 }
 
 func tessResultIteratorCopy(handle TessResultIterator) TessResultIterator {
-	h, _, _ := _tessResultIteratorCopy.Call(handle.it)
-	return TessResultIterator{it: h}
+	h, _, _ := _tessResultIteratorCopy.Call(uintptr(handle.it))
+	return TessResultIterator{it: unsafe.Pointer(h)}
 }
 
 func tessResultIteratorDelete(handle TessResultIterator) {
-	_tessResultIteratorDelete.Call(handle.it)
+	_tessResultIteratorDelete.Call(uintptr(handle.it))
 }
 
 func tessResultIteratorNext(handle TessResultIterator, level TessPageIteratorLevel) bool {
-	code, _, _ := _tessResultIteratorNext.Call(handle.it, uintptr(level))
+	code, _, _ := _tessResultIteratorNext.Call(uintptr(handle.it), uintptr(level))
 	return code != 0
 }
 
 func tessResultIteratorGetUTF8Text(handle TessResultIterator, level TessPageIteratorLevel) *C.char {
-	text, _, _ := _tessResultIteratorGetUTF8Text.Call(handle.it, uintptr(level))
+	text, _, _ := _tessResultIteratorGetUTF8Text.Call(uintptr(handle.it), uintptr(level))
 	return (*C.char)(unsafe.Pointer(text))
 }
 
 func tessResultIteratorConfidence(handle TessResultIterator, level TessPageIteratorLevel) float32 {
-	_, confidence, _ := _tessResultIteratorConfidence.Call(handle.it, uintptr(level))
+	_, confidence, _ := _tessResultIteratorConfidence.Call(uintptr(handle.it), uintptr(level))
 	c := math.Float32frombits(uint32(confidence))
 
 	return c
@@ -168,21 +168,21 @@ func tessResultIteratorConfidence(handle TessResultIterator, level TessPageItera
 
 /* Page iterator */
 func tessPageIteratorBegin(handle TessPageIterator) {
-	_tessPageIteratorBegin.Call(handle.it)
+	_tessPageIteratorBegin.Call(uintptr(handle.it))
 }
 
 func tessPageIteratorNext(handle TessPageIterator, level TessPageIteratorLevel) bool {
-	code, _, _ := _tessPageIteratorNext.Call(handle.it, uintptr(level))
+	code, _, _ := _tessPageIteratorNext.Call(uintptr(handle.it), uintptr(level))
 	return code != 0
 }
 
 func tessPageIteratorIsAtBeginningOf(handle TessPageIterator, level TessPageIteratorLevel) bool {
-	code, _, _ := _tessPageIteratorIsAtBeginningOf.Call(handle.it, uintptr(level))
+	code, _, _ := _tessPageIteratorIsAtBeginningOf.Call(uintptr(handle.it), uintptr(level))
 	return code != 0
 }
 
 func tessPageIteratorIsAtFinalElement(handle TessPageIterator, level TessPageIteratorLevel, element TessPageIteratorLevel) bool {
-	code, _, _ := _tessPageIteratorIsAtFinalElement.Call(handle.it, uintptr(level), uintptr(element))
+	code, _, _ := _tessPageIteratorIsAtFinalElement.Call(uintptr(handle.it), uintptr(level), uintptr(element))
 	return code != 0
 }
 
@@ -192,7 +192,7 @@ func tessPageIteratorBoundingBox(handle TessPageIterator, level TessPageIterator
 	r := C.int(0)
 	b := C.int(0)
 
-	res, _, _ := _tessPageIteratorBoundingBox.Call(handle.it, uintptr(level),
+	res, _, _ := _tessPageIteratorBoundingBox.Call(uintptr(handle.it), uintptr(level),
 		uintptr(unsafe.Pointer(&l)), uintptr(unsafe.Pointer(&t)), uintptr(unsafe.Pointer(&r)), uintptr(unsafe.Pointer(&b)))
 	if res != 0 {
 		return int(l), int(t), int(r), int(b)
@@ -206,7 +206,7 @@ func tessPageIteratorOrientation(handle TessPageIterator) TessPageOrientation {
 	textline_order := C.int(0)
 	deskew_angle := C.float(0)
 
-	_tessPageIteratorOrientation.Call(handle.it,
+	_tessPageIteratorOrientation.Call(uintptr(handle.it),
 		uintptr(unsafe.Pointer(&orientation)),
 		uintptr(unsafe.Pointer(&writing_direction)),
 		uintptr(unsafe.Pointer(&textline_order)),

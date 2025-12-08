@@ -7,3 +7,4 @@
 server
 *.dll
 *.a
+*.exe

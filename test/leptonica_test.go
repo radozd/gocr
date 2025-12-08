@@ -124,7 +124,7 @@ func TestRemoveBlackBorders(t *testing.T) {
 	pix1.WriteToFile("image_black_borders_removed.jpg", leptonica.JFIF_JPEG)
 }
 
-func TestBlentRect(t *testing.T) {
+func TestBlendRect(t *testing.T) {
 	pix := leptonica.NewPixFromFile("blank32.png")
 	if pix == leptonica.NullPix {
 		t.Error("error loading pix from file")

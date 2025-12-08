@@ -51,10 +51,11 @@ var paramsMask map[string]*int = map[string]*int{
 }
 
 func main() {
-	pix := leptonica.NewPixFromFile("test1.tif")
+	pix := leptonica.NewPixFromFile("__e2abcbf44eb6794003774813e2bae73f.tif") //"test1.tif")
+	//pix := leptonica.NewPixFromFile("test1.tif")
 	defer pix.Destroy()
 
-	originalImage = pix.GetDeskewedCopy(0)
+	originalImage = pix //pix.GetDeskewedCopy(0)
 
 	http.HandleFunc("/", serveHTML)
 	http.HandleFunc("/image", serveImage)
@@ -174,17 +175,17 @@ func serveHTML(w http.ResponseWriter, r *http.Request) {
 		<nav id='side'>
 			<fieldset>
 				<legend>Enhance</legend>` +
-		sliderInt(paramsEnhance, "tilex", 1, 40) +
-		sliderInt(paramsEnhance, "tiley", 1, 40) +
+		sliderInt(paramsEnhance, "tilex", 0, 40) +
+		sliderInt(paramsEnhance, "tiley", 0, 40) +
 		sliderInt(paramsEnhance, "thresh1", 1, 128) +
 		sliderInt(paramsEnhance, "minc", 5, 100) +
 		sliderInt(paramsEnhance, "white1", 1, 254) +
-		sliderInt(paramsEnhance, "smoothx", 1, 20) +
-		sliderInt(paramsEnhance, "smoothy", 1, 20) +
-		sliderInt(paramsEnhance, "gamma", 1, 100) +
+		sliderInt(paramsEnhance, "smoothx", 0, 20) +
+		sliderInt(paramsEnhance, "smoothy", 0, 20) +
+		sliderInt(paramsEnhance, "gamma", 0, 100) +
 		sliderInt(paramsEnhance, "gammamin", 1, 254) +
 		sliderInt(paramsEnhance, "gammamax", 1, 254) +
-		sliderInt(paramsEnhance, "factor", 1, 100) +
+		sliderInt(paramsEnhance, "factor", 0, 100) +
 		sliderInt(paramsEnhance, "border", 1, 255) + `
 			</fieldset>
 			<fieldset>
@@ -196,7 +197,7 @@ func serveHTML(w http.ResponseWriter, r *http.Request) {
 			</fieldset>
 			<fieldset>
 				<legend>Mask</legend>` +
-		sliderInt(paramsMask, "thresh3", 1, 128) +
+		sliderInt(paramsMask, "thresh3", 0, 128) +
 		sliderInt(paramsMask, "sqblock", 1, 30) +
 		sliderInt(paramsMask, "sqmin", 30, 150) +
 		sliderInt(paramsMask, "sqmax", 160, 500) +
@@ -259,6 +260,9 @@ func processImage(w http.ResponseWriter, r *http.Request) {
 	gray := en.GetGrayCopy(leptonica.GRAY_CAST_REMOVE_COLORS, leptonica.DefaultGrayOptions)
 	defer gray.Destroy()
 
-	gray.MaskAll(leptonica.DefaultMaskOptions)
-	w.Write(pixToJpeg(gray))
+	deskew, _ := gray.GetDeskewedCopyAndAngle(0)
+	defer deskew.Destroy()
+
+	deskew.MaskAll(leptonica.DefaultMaskOptions)
+	w.Write(pixToJpeg(deskew))
 }

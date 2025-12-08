@@ -29,7 +29,7 @@ func setMsgSeverity(level int) {
 }
 
 func pixDestroy(pix *Pix) {
-	C.pixDestroy((**C.PIX)(unsafe.Pointer(pix)))
+	C.pixDestroy((**C.PIX)(unsafe.Pointer(&pix.p)))
 	pix.p = nil
 }
 
@@ -240,7 +240,7 @@ func boxCreate(x, y, w, h int) Box {
 }
 
 func boxDestroy(box *Box) {
-	C.boxDestroy((**C.BOX)(unsafe.Pointer(box)))
+	C.boxDestroy((**C.BOX)(unsafe.Pointer(&box.p)))
 	box.p = nil
 }
 
@@ -267,7 +267,7 @@ type Boxa struct {
 }
 
 func boxaDestroy(boxa *Boxa) {
-	C.boxaDestroy((**C.BOXA)(unsafe.Pointer(boxa)))
+	C.boxaDestroy((**C.BOXA)(unsafe.Pointer(&boxa.p)))
 	boxa.p = nil
 }
 

@@ -36,61 +36,66 @@ var (
 )
 
 type Scanner struct {
-	handle uintptr
+	p unsafe.Pointer
 }
 
-type image uintptr
+type image struct {
+	p unsafe.Pointer
+}
 
-type symbol uintptr
+type symbol struct {
+	p unsafe.Pointer
+}
 
-var nullSymbol symbol = symbol(0)
+var nullSymbol symbol = symbol{p: nil}
 
 func zbar_image_create(width int, height int, data uintptr, size int) image {
-	img, _, _ := _zbar_image_create.Call()
-	_zbar_image_set_size.Call(img, uintptr(width), uintptr(height))
-	_zbar_image_set_format.Call(img, uintptr(C.ulong(0x30303859))) // unsafe.Pointer(cFormat) // Y800 (grayscale)
-	_zbar_image_set_data.Call(img, data, uintptr(size), uintptr(0))
+	p, _, _ := _zbar_image_create.Call()
+	_zbar_image_set_size.Call(p, uintptr(width), uintptr(height))
+	_zbar_image_set_format.Call(p, uintptr(C.ulong(0x30303859))) // unsafe.Pointer(cFormat) // Y800 (grayscale)
+	_zbar_image_set_data.Call(p, data, uintptr(size), uintptr(0))
 
-	return image(img)
+	return image{p: unsafe.Pointer(p)}
 }
 
 func zbar_image_destroy(img image) {
-	_zbar_image_destroy.Call(uintptr(img))
+	_zbar_image_destroy.Call(uintptr(img.p))
+	img.p = nil
 }
 
 // scanner
 func zbar_image_scanner_create() Scanner {
 	s, _, _ := _zbar_image_scanner_create.Call()
-	return Scanner{handle: s}
+	return Scanner{p: unsafe.Pointer(s)}
 }
 
 func zbar_image_scanner_destroy(scn *Scanner) {
-	_zbar_image_scanner_destroy.Call(scn.handle)
-	scn.handle = 0
+	_zbar_image_scanner_destroy.Call(uintptr(scn.p))
+	scn.p = nil
 }
 
 func zbar_image_scanner_set_config(scn Scanner, symbology int, config int, value int) {
-	_zbar_image_scanner_set_config.Call(scn.handle, uintptr(symbology), uintptr(config), uintptr(value))
+	_zbar_image_scanner_set_config.Call(uintptr(scn.p), uintptr(symbology), uintptr(config), uintptr(value))
 }
 
 func zbar_scan_image(scn Scanner, img image) bool {
-	res, _, _ := _zbar_scan_image.Call(scn.handle, uintptr(img))
+	res, _, _ := _zbar_scan_image.Call(uintptr(scn.p), uintptr(img.p))
 	return res > 0
 }
 
 // symbol
 func zbar_image_first_symbol(img image) symbol {
-	sym, _, _ := _zbar_image_first_symbol.Call(uintptr(img))
-	return symbol(sym)
+	sym, _, _ := _zbar_image_first_symbol.Call(uintptr(img.p))
+	return symbol{p: unsafe.Pointer(sym)}
 }
 
 func zbar_symbol_next(sym symbol) symbol {
-	n, _, _ := _zbar_symbol_next.Call(uintptr(sym))
-	return symbol(n)
+	n, _, _ := _zbar_symbol_next.Call(uintptr(sym.p))
+	return symbol{p: unsafe.Pointer(n)}
 }
 
 func zbar_symbol_get_data(sym symbol) string {
-	text, _, _ := _zbar_symbol_get_data.Call(uintptr(sym))
+	text, _, _ := _zbar_symbol_get_data.Call(uintptr(sym.p))
 	if text == 0 {
 		return ""
 	}
@@ -98,21 +103,21 @@ func zbar_symbol_get_data(sym symbol) string {
 }
 
 func zbar_symbol_get_loc_size(sym symbol) int {
-	res, _, _ := _zbar_symbol_get_loc_size.Call(uintptr(sym))
+	res, _, _ := _zbar_symbol_get_loc_size.Call(uintptr(sym.p))
 	return int(res)
 }
 
 func zbar_symbol_get_loc_x(sym symbol, idx int) int {
-	res, _, _ := _zbar_symbol_get_loc_x.Call(uintptr(sym), uintptr(idx))
+	res, _, _ := _zbar_symbol_get_loc_x.Call(uintptr(sym.p), uintptr(idx))
 	return int(res)
 }
 
 func zbar_symbol_get_loc_y(sym symbol, idx int) int {
-	res, _, _ := _zbar_symbol_get_loc_y.Call(uintptr(sym), uintptr(idx))
+	res, _, _ := _zbar_symbol_get_loc_y.Call(uintptr(sym.p), uintptr(idx))
 	return int(res)
 }
 
 func zbar_symbol_get_type(sym symbol) ZBAR_CODETYPE {
-	t, _, _ := _zbar_symbol_get_type.Call(uintptr(sym))
+	t, _, _ := _zbar_symbol_get_type.Call(uintptr(sym.p))
 	return ZBAR_CODETYPE(t)
 }

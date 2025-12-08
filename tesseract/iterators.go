@@ -19,8 +19,8 @@ func (resIt TessResultIterator) Delete() {
 	tessResultIteratorDelete(resIt)
 }
 
-func (resIt TessResultIterator) Next(level TessPageIteratorLevel) {
-	tessResultIteratorNext(resIt, level)
+func (resIt TessResultIterator) Next(level TessPageIteratorLevel) bool {
+	return tessResultIteratorNext(resIt, level)
 }
 
 func (resIt TessResultIterator) GetUTF8Text(level TessPageIteratorLevel) (string, float32) {
