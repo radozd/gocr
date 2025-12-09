@@ -42,7 +42,7 @@ func (scn Scanner) Process(pix leptonica.Pix) []Code {
 	}
 
 	img.destroy()
-	runtime.KeepAlive(raw)
+	runtime.KeepAlive(gray)
 
 	return codes
 }
