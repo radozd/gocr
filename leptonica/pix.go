@@ -56,8 +56,6 @@ func (pix Pix) FillRect(x int, y int, w int, h int, black bool) {
 }
 
 func (pix Pix) BlendRect(x int, y int, w int, h int, color int, fract float32) {
-	//_, _, d := pixGetDimensions(pix)
-
 	box := boxCreate(x, y, w, h)
 	pixBlendInRect(pix, box, color, fract)
 	boxDestroy(&box)
