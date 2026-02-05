@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	leptonicaDll = syscall.NewLazyDLL("leptonica-1.84.0.dll")
+	leptonicaDll = syscall.NewLazyDLL("leptonica-1.88.0.dll")
 
 	_setMsgSeverity = leptonicaDll.NewProc("setMsgSeverity")
 	_pixDestroy     = leptonicaDll.NewProc("pixDestroy")

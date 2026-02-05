@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	tessDll = syscall.NewLazyDLL("tesseract53.dll")
+	tessDll = syscall.NewLazyDLL("tesseract55.dll")
 
 	_tessBaseAPICreate         = tessDll.NewProc("TessBaseAPICreate")
 	_tessBaseAPIEnd            = tessDll.NewProc("TessBaseAPIEnd")
