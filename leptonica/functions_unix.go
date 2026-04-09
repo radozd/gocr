@@ -18,10 +18,19 @@ type Pix struct {
 	p *C.PIX
 }
 
+type Pixa struct {
+	p *C.PIXA
+}
+
 var NullPix Pix = Pix{p: nil}
+var NullPixa Pixa = Pixa{p: nil}
 
 func UnsafePix(pix Pix) uintptr {
 	return uintptr(unsafe.Pointer(pix.p))
+}
+
+func UnsafePixa(pixa Pixa) uintptr {
+	return uintptr(unsafe.Pointer(pixa.p))
 }
 
 func setMsgSeverity(level int) {
@@ -33,8 +42,41 @@ func pixDestroy(pix *Pix) {
 	pix.p = nil
 }
 
+func pixaDestroy(pixa *Pixa) {
+	C.pixaDestroy((**C.PIXA)(unsafe.Pointer(&pixa.p)))
+	pixa.p = nil
+}
+
 func lept_free(cMem *C.uchar) {
 	C.lept_free(unsafe.Pointer(cMem))
+}
+
+func findFileFormat(filename string) (ImageType, bool) {
+	cFilename := C.CString(filename)
+	defer C.free(unsafe.Pointer(cFilename))
+
+	format := C.l_int32(C.IFF_UNKNOWN)
+	code := C.findFileFormat(cFilename, &format)
+	if code != 0 {
+		return IFF_UNKNOWN, false
+	}
+	return ImageType(format), true
+}
+
+func findFileFormatBuffer(data []byte) (ImageType, bool) {
+	if len(data) == 0 {
+		return IFF_UNKNOWN, false
+	}
+
+	format := C.l_int32(C.IFF_UNKNOWN)
+	code := C.findFileFormatBuffer(
+		(*C.l_uint8)(unsafe.Pointer(unsafe.SliceData(data))),
+		&format,
+	)
+	if code != 0 {
+		return IFF_UNKNOWN, false
+	}
+	return ImageType(format), true
 }
 
 func pixRead(filename string) Pix {
@@ -46,6 +88,35 @@ func pixRead(filename string) Pix {
 
 func pixReadMem(image []byte) Pix {
 	return Pix{p: C.pixReadMem((*C.uchar)(unsafe.Pointer(unsafe.SliceData(image))), C.size_t(len(image)))}
+}
+
+func pixaReadMemMultipageTiff(data []byte) Pixa {
+	if len(data) == 0 {
+		return NullPixa
+	}
+
+	return Pixa{
+		p: C.pixaReadMemMultipageTiff(
+			(*C.l_uint8)(unsafe.Pointer(unsafe.SliceData(data))),
+			C.size_t(len(data)),
+		),
+	}
+}
+
+func pixaGetCount(pixa Pixa) int {
+	if pixa.p == nil {
+		return 0
+	}
+	return int(C.pixaGetCount(pixa.p))
+}
+
+func pixaGetPix(pixa Pixa, index int, accessFlag int) Pix {
+	if pixa.p == nil {
+		return NullPix
+	}
+	return Pix{
+		p: C.pixaGetPix(pixa.p, C.l_int32(index), C.l_int32(accessFlag)),
+	}
 }
 
 func pixWrite(filename string, pix Pix, format int) bool {

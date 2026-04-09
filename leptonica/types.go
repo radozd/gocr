@@ -3,26 +3,72 @@ package leptonica
 type ImageType int32
 
 const (
-	UNKNOWN ImageType = iota
-	BMP
-	JFIF_JPEG
-	PNG
-	TIFF
-	TIFF_PACKBITS
-	TIFF_RLE
-	TIFF_G3
-	TIFF_G4
-	TIFF_LZW
-	TIFF_ZIP
-	PNM
-	PS
-	GIF
-	JP2
-	WEBP
-	LPDF
-	DEFAULT
-	SPIX
+	IFF_UNKNOWN       ImageType = 0
+	IFF_BMP           ImageType = 1
+	IFF_JFIF_JPEG     ImageType = 2
+	IFF_PNG           ImageType = 3
+	IFF_TIFF          ImageType = 4
+	IFF_TIFF_PACKBITS ImageType = 5
+	IFF_TIFF_RLE      ImageType = 6
+	IFF_TIFF_G3       ImageType = 7
+	IFF_TIFF_G4       ImageType = 8
+	IFF_TIFF_LZW      ImageType = 9
+	IFF_TIFF_ZIP      ImageType = 10
+	IFF_PNM           ImageType = 11
+	IFF_PS            ImageType = 12
+	IFF_GIF           ImageType = 13
+	IFF_JP2           ImageType = 14
+	IFF_WEBP          ImageType = 15
+	IFF_LPDF          ImageType = 16
+	IFF_TIFF_JPEG     ImageType = 17
+	IFF_DEFAULT       ImageType = 18
+	IFF_SPIX          ImageType = 19
 )
+
+func (f ImageType) String() string {
+	switch f {
+	case IFF_BMP:
+		return "BMP"
+	case IFF_JFIF_JPEG:
+		return "JPEG"
+	case IFF_PNG:
+		return "PNG"
+	case IFF_TIFF:
+		return "TIFF"
+	case IFF_TIFF_PACKBITS:
+		return "TIFF_PACKBITS"
+	case IFF_TIFF_RLE:
+		return "TIFF_RLE"
+	case IFF_TIFF_G3:
+		return "TIFF_G3"
+	case IFF_TIFF_G4:
+		return "TIFF_G4"
+	case IFF_TIFF_LZW:
+		return "TIFF_LZW"
+	case IFF_TIFF_ZIP:
+		return "TIFF_ZIP"
+	case IFF_PNM:
+		return "PNM"
+	case IFF_PS:
+		return "PS"
+	case IFF_GIF:
+		return "GIF"
+	case IFF_JP2:
+		return "JP2"
+	case IFF_WEBP:
+		return "WEBP"
+	case IFF_LPDF:
+		return "LPDF"
+	case IFF_TIFF_JPEG:
+		return "TIFF_JPEG"
+	case IFF_DEFAULT:
+		return "DEFAULT"
+	case IFF_SPIX:
+		return "SPIX"
+	default:
+		return "UNKNOWN"
+	}
+}
 
 const (
 	L_SEVERITY_EXTERNAL = 0 /* Get the severity from the environment   */

@@ -220,7 +220,7 @@ func serveHTML(w http.ResponseWriter, r *http.Request) {
 func pixToJpeg(pix leptonica.Pix) []byte {
 	var res []byte
 	var err error
-	if res, err = pix.WriteToMem(leptonica.JFIF_JPEG); err != nil {
+	if res, err = pix.WriteToMem(leptonica.IFF_JFIF_JPEG); err != nil {
 		return nil
 	}
 	return res

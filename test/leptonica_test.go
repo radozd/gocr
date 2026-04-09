@@ -21,9 +21,9 @@ func TestConvertPix(t *testing.T) {
 	}
 	defer pix.Destroy()
 
-	pix.WriteToFile("test_write1.jpg", leptonica.JFIF_JPEG)
+	pix.WriteToFile("test_write1.jpg", leptonica.IFF_JFIF_JPEG)
 
-	tmpbuf, err := pix.WriteToMem(leptonica.PNG)
+	tmpbuf, err := pix.WriteToMem(leptonica.IFF_PNG)
 	if err != nil {
 		t.Error(err)
 		return
@@ -78,7 +78,7 @@ func TestDeskew(t *testing.T) {
 	}
 	defer dpix.Destroy()
 
-	dpix.WriteToFile("deskewed.jpg", leptonica.JFIF_JPEG)
+	dpix.WriteToFile("deskewed.jpg", leptonica.IFF_JFIF_JPEG)
 }
 
 func TestRotate(t *testing.T) {
@@ -104,7 +104,7 @@ func TestRotate(t *testing.T) {
 
 	t.Log(angle)
 
-	pix2.WriteToFile("rotated.jpg", leptonica.JFIF_JPEG)
+	pix2.WriteToFile("rotated.jpg", leptonica.IFF_JFIF_JPEG)
 }
 
 func TestRemoveBlackBorders(t *testing.T) {
@@ -121,7 +121,7 @@ func TestRemoveBlackBorders(t *testing.T) {
 	pix1 := tmp.EnhancedCopy(leptonica.DefaultEnhanceOptions)
 	defer pix1.Destroy()
 
-	pix1.WriteToFile("image_black_borders_removed.jpg", leptonica.JFIF_JPEG)
+	pix1.WriteToFile("image_black_borders_removed.jpg", leptonica.IFF_JFIF_JPEG)
 }
 
 func TestBlendRect(t *testing.T) {
@@ -134,5 +134,36 @@ func TestBlendRect(t *testing.T) {
 
 	pix.BlendRect(100, 100, 200, 300, 0, 0.2)
 	pix.BlendRect(150, 150, 200, 300, 0, 0.2)
-	pix.WriteToFile("blank_blend2.png", leptonica.PNG)
+	pix.WriteToFile("blank_blend2.png", leptonica.IFF_PNG)
+}
+
+func TestMultipage(t *testing.T) {
+	format, err := leptonica.DetectImageTypeFromFile("multipage.tif")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(format.String())
+
+	data, err := os.ReadFile("multipage.tif")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	pixa := leptonica.NewPixaFromMultipageTiffMem(data)
+	defer pixa.Destroy()
+
+	n := pixa.Count()
+	for i := 0; i < n; i++ {
+		pix := pixa.GetPix(i)
+		if pix == leptonica.NullPix {
+			continue
+		}
+
+		w, h, d := pix.GetDimensions()
+		t.Log(i, w, h, d)
+
+		pix.Destroy()
+	}
 }

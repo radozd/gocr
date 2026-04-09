@@ -5,6 +5,22 @@ import (
 	"strconv"
 )
 
+func DetectImageTypeFromFile(filename string) (ImageType, error) {
+	format, ok := findFileFormat(filename)
+	if !ok {
+		return IFF_UNKNOWN, errors.New("cannot determine file format")
+	}
+	return format, nil
+}
+
+func DetectImageTypeFromMem(data []byte) (ImageType, error) {
+	format, ok := findFileFormatBuffer(data)
+	if !ok {
+		return IFF_UNKNOWN, errors.New("cannot determine file format")
+	}
+	return format, nil
+}
+
 func NewPixFromFile(filename string) Pix {
 	return pixRead(filename)
 }
@@ -79,4 +95,25 @@ func (pix Pix) GetDeskewedCopy(redsearch int) Pix {
 
 func (pix Pix) GetDeskewedCopyAndAngle(redsearch int) (Pix, float32) {
 	return pixFindSkewAndDeskew(pix, redsearch)
+}
+
+// Pixa
+func NewPixaFromMultipageTiffMem(data []byte) Pixa {
+	return pixaReadMemMultipageTiff(data)
+}
+
+func (pixa *Pixa) Destroy() {
+	pixaDestroy(pixa)
+}
+
+func (pixa Pixa) Count() int {
+	return pixaGetCount(pixa)
+}
+
+func (pixa Pixa) GetPix(index int) Pix {
+	return pixaGetPix(pixa, index, L_CLONE)
+}
+
+func (pixa Pixa) GetPixCopy(index int) Pix {
+	return pixaGetPix(pixa, index, L_COPY)
 }

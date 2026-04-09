@@ -15,16 +15,22 @@ var (
 
 	_setMsgSeverity = leptonicaDll.NewProc("setMsgSeverity")
 	_pixDestroy     = leptonicaDll.NewProc("pixDestroy")
+	_pixaDestroy    = leptonicaDll.NewProc("pixaDestroy")
 	_lept_free      = leptonicaDll.NewProc("lept_free")
 
-	_pixRead          = leptonicaDll.NewProc("pixRead")
-	_pixReadMem       = leptonicaDll.NewProc("pixReadMem")
-	_pixWrite         = leptonicaDll.NewProc("pixWrite")
-	_pixWriteMem      = leptonicaDll.NewProc("pixWriteMem")
-	_pixGetData       = leptonicaDll.NewProc("pixGetData")
-	_pixGetDimensions = leptonicaDll.NewProc("pixGetDimensions")
-	_pixGetWpl        = leptonicaDll.NewProc("pixGetWpl")
-	_pixCountPixels   = leptonicaDll.NewProc("pixCountPixels")
+	_findFileFormat           = leptonicaDll.NewProc("findFileFormat")
+	_findFileFormatBuffer     = leptonicaDll.NewProc("findFileFormatBuffer")
+	_pixRead                  = leptonicaDll.NewProc("pixRead")
+	_pixReadMem               = leptonicaDll.NewProc("pixReadMem")
+	_pixaReadMemMultipageTiff = leptonicaDll.NewProc("pixaReadMemMultipageTiff")
+	_pixaGetCount             = leptonicaDll.NewProc("pixaGetCount")
+	_pixaGetPix               = leptonicaDll.NewProc("pixaGetPix")
+	_pixWrite                 = leptonicaDll.NewProc("pixWrite")
+	_pixWriteMem              = leptonicaDll.NewProc("pixWriteMem")
+	_pixGetData               = leptonicaDll.NewProc("pixGetData")
+	_pixGetDimensions         = leptonicaDll.NewProc("pixGetDimensions")
+	_pixGetWpl                = leptonicaDll.NewProc("pixGetWpl")
+	_pixCountPixels           = leptonicaDll.NewProc("pixCountPixels")
 
 	_pixRotate180         = leptonicaDll.NewProc("pixRotate180")
 	_pixRotate            = leptonicaDll.NewProc("pixRotate")
@@ -78,10 +84,19 @@ type Pix struct {
 	p unsafe.Pointer
 }
 
+type Pixa struct {
+	p unsafe.Pointer
+}
+
 var NullPix Pix = Pix{p: nil}
+var NullPixa Pixa = Pixa{p: nil}
 
 func UnsafePix(pix Pix) uintptr {
 	return uintptr(pix.p)
+}
+
+func UnsafePixa(pixa Pixa) uintptr {
+	return uintptr(pixa.p)
 }
 
 func setMsgSeverity(level int) {
@@ -93,8 +108,38 @@ func pixDestroy(pix *Pix) {
 	pix.p = nil
 }
 
+func pixaDestroy(pixa *Pixa) {
+	_pixaDestroy.Call(uintptr(unsafe.Pointer(&pixa.p)))
+	pixa.p = nil
+}
+
 func lept_free(cMem *C.uchar) {
 	_lept_free.Call(uintptr(unsafe.Pointer(cMem)))
+}
+
+func findFileFormat(filename string) (ImageType, bool) {
+	cFilename := C.CString(filename)
+	defer C.free(unsafe.Pointer(cFilename))
+
+	format := C.int32_t(IFF_UNKNOWN)
+	code, _, _ := _findFileFormat.Call(uintptr(unsafe.Pointer(cFilename)), uintptr(unsafe.Pointer(&format)))
+	if code != 0 {
+		return IFF_UNKNOWN, false
+	}
+	return ImageType(format), true
+}
+
+func findFileFormatBuffer(data []byte) (ImageType, bool) {
+	if len(data) == 0 {
+		return IFF_UNKNOWN, false
+	}
+
+	format := C.int32_t(IFF_UNKNOWN)
+	code, _, _ := _findFileFormatBuffer.Call(uintptr(unsafe.Pointer(unsafe.SliceData(data))), uintptr(unsafe.Pointer(&format)))
+	if code != 0 {
+		return IFF_UNKNOWN, false
+	}
+	return ImageType(format), true
 }
 
 func pixRead(filename string) Pix {
@@ -107,6 +152,38 @@ func pixRead(filename string) Pix {
 
 func pixReadMem(image []byte) Pix {
 	p, _, _ := _pixReadMem.Call(uintptr(unsafe.Pointer(unsafe.SliceData(image))), uintptr(C.size_t(len(image))))
+	return Pix{p: unsafe.Pointer(p)}
+}
+
+func pixaReadMemMultipageTiff(data []byte) Pixa {
+	if len(data) == 0 {
+		return NullPixa
+	}
+
+	p, _, _ := _pixaReadMemMultipageTiff.Call(
+		uintptr(unsafe.Pointer(unsafe.SliceData(data))),
+		uintptr(C.size_t(len(data))),
+	)
+	return Pixa{p: unsafe.Pointer(p)}
+}
+
+func pixaGetCount(pixa Pixa) int {
+	if pixa.p == nil {
+		return 0
+	}
+	n, _, _ := _pixaGetCount.Call(uintptr(pixa.p))
+	return int(n)
+}
+
+func pixaGetPix(pixa Pixa, index int, accessFlag int) Pix {
+	if pixa.p == nil {
+		return NullPix
+	}
+	p, _, _ := _pixaGetPix.Call(
+		uintptr(pixa.p),
+		uintptr(C.int32_t(index)),
+		uintptr(C.int32_t(accessFlag)),
+	)
 	return Pix{p: unsafe.Pointer(p)}
 }
 
