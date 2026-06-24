@@ -28,25 +28,25 @@ func TestOcr(t *testing.T) {
 	t.Log(tess.GetPageOrientation())
 	//t.Log("\n" + tess.Text())
 
-	resIt := tess.GetIterator()
-	pageIt := resIt.AsPageIterator()
-	defer resIt.Delete()
+	res_it := tess.GetIterator()
+	page_it := res_it.AsPageIterator()
+	defer res_it.Delete()
 
 	level := tesseract.RIL_BLOCK
 
 	good := true
 	for good {
 		//if pageIt.IsAtBeginningOf(level) {
-		text, goodness := resIt.GetUTF8Text(level)
+		text, goodness := res_it.GetUTF8Text(level)
 		if s := strings.TrimSpace(text); s != "" {
-			l, tt, r, b := pageIt.BoundingBox(level)
+			l, tt, r, b := page_it.BoundingBox(level)
 			sparsity := float32((r-l)*(b-tt)) / float32(len(s)) / 1000
 			if sparsity < 4 {
 				t.Logf("%s\ngoodness=%f\nsparsity=%.3f\n", text, goodness, sparsity)
 			} else {
 				t.Logf("****************************************\n")
 
-				it2 := resIt.Copy()
+				it2 := res_it.Copy()
 				pit2 := it2.AsPageIterator()
 				good2 := true
 				for good2 {
@@ -66,6 +66,6 @@ func TestOcr(t *testing.T) {
 		}
 		//}
 
-		good = pageIt.Next(level)
+		good = page_it.Next(level)
 	}
 }

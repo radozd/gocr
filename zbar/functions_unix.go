@@ -25,6 +25,9 @@ var nullSymbol symbol = symbol{}
 
 func zbar_image_create(width int, height int, data uintptr, size int) image {
 	img := C.zbar_image_create()
+	if img == nil {
+		return image{}
+	}
 	C.zbar_image_set_size(img, C.uint(width), C.uint(height))
 	C.zbar_image_set_format(img, C.ulong(0x30303859)) // unsafe.Pointer(cFormat) // Y800 (grayscale)
 	C.zbar_image_set_data(img, unsafe.Pointer(data), C.ulong(size), nil)

@@ -82,10 +82,13 @@ func (api Api) HOCRText(pagenumber int) string {
 }
 
 func (api Api) TextBlocks(level TessPageIteratorLevel, dynamicSparsity float32) []TextBlock {
-	resIt := api.GetIterator()
-	defer resIt.Delete()
+	res_it := api.GetIterator()
+	if res_it.it == nil {
+		return nil
+	}
+	defer res_it.Delete()
 
-	pageIt := resIt.AsPageIterator()
+	page_it := res_it.AsPageIterator()
 	blocks := make([]TextBlock, 0)
 
 	dynamic := level == RIL_DYNAMIC
@@ -95,8 +98,13 @@ func (api Api) TextBlocks(level TessPageIteratorLevel, dynamicSparsity float32) 
 
 	good := true
 	for good {
-		if text, goodness := resIt.GetUTF8Text(level); strings.TrimSpace(text) != "" {
-			x1, y1, x2, y2 := pageIt.BoundingBox(level)
+		if text, goodness := res_it.GetUTF8Text(level); strings.TrimSpace(text) != "" {
+			x1, y1, x2, y2 := page_it.BoundingBox(level)
+			if x2 <= x1 || y2 <= y1 {
+				good = page_it.Next(level)
+				continue
+			}
+
 			if !dynamic {
 				blocks = append(blocks, TextBlock{
 					Goodness: goodness,
@@ -117,12 +125,17 @@ func (api Api) TextBlocks(level TessPageIteratorLevel, dynamicSparsity float32) 
 						Height:   y2 - y1,
 					})
 				} else {
-					it2 := resIt.Copy()
+					it2 := res_it.Copy()
 					pit2 := it2.AsPageIterator()
 					good2 := true
 					for good2 {
 						if text, goodness := it2.GetUTF8Text(RIL_TEXTLINE); strings.TrimSpace(text) != "" {
 							x1, y1, x2, y2 = pit2.BoundingBox(RIL_TEXTLINE)
+							if x2 <= x1 || y2 <= y1 {
+								good = page_it.Next(level)
+								continue
+							}
+
 							blocks = append(blocks, TextBlock{
 								Goodness: goodness,
 								Value:    text,
@@ -142,14 +155,17 @@ func (api Api) TextBlocks(level TessPageIteratorLevel, dynamicSparsity float32) 
 			}
 		}
 
-		good = pageIt.Next(level)
+		good = page_it.Next(level)
 	}
 	return blocks
 }
 
 func (api Api) GetPageOrientation() TessPageOrientation {
-	resIt := api.GetIterator()
-	defer resIt.Delete()
+	res_it := api.GetIterator()
+	if res_it.it == nil {
+		return ORIENTATION_PAGE_UP
+	}
+	defer res_it.Delete()
 
-	return tessPageIteratorOrientation(resIt.AsPageIterator())
+	return tessPageIteratorOrientation(res_it.AsPageIterator())
 }

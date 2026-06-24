@@ -16,11 +16,17 @@ func (scn Scanner) scan(img image) bool {
 }
 
 func (scn *Scanner) Destroy() {
+	if scn == nil || scn.p == nil {
+		return
+	}
 	zbar_image_scanner_destroy(scn)
 }
 
 func (scn Scanner) Process(pix leptonica.Pix) []Code {
 	codes := make([]Code, 0)
+	if scn.p == nil {
+		return codes
+	}
 
 	w, h, _ := pix.GetDimensions()
 	if w == 0 || h == 0 {
@@ -34,6 +40,10 @@ func (scn Scanner) Process(pix leptonica.Pix) []Code {
 
 	raw := unsafe.Pointer(unsafe.SliceData(gray))
 	img := newImage(w, h, uintptr(raw), len(gray))
+	if img.p == nil {
+		runtime.KeepAlive(gray)
+		return codes
+	}
 
 	if scn.scan(img) {
 		img.first().each(func(code Code) {

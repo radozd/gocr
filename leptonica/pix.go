@@ -41,7 +41,11 @@ func (pix Pix) WriteToFile(filename string, format ImageType) error {
 }
 
 func (pix Pix) WriteToMem(format ImageType) ([]byte, error) {
-	return pixWriteMem(pix, int(format)), nil
+	data := pixWriteMem(pix, int(format))
+	if data == nil {
+		return nil, errors.New("error saving pix to memory")
+	}
+	return data, nil
 }
 
 func (pix Pix) GetDimensions() (int, int, int) {

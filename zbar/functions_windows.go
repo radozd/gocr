@@ -51,6 +51,9 @@ var nullSymbol symbol = symbol{p: nil}
 
 func zbar_image_create(width int, height int, data uintptr, size int) image {
 	p, _, _ := _zbar_image_create.Call()
+	if p == 0 {
+		return image{}
+	}
 	_zbar_image_set_size.Call(p, uintptr(width), uintptr(height))
 	_zbar_image_set_format.Call(p, uintptr(C.ulong(0x30303859))) // unsafe.Pointer(cFormat) // Y800 (grayscale)
 	_zbar_image_set_data.Call(p, data, uintptr(size), uintptr(0))

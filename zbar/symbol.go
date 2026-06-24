@@ -29,11 +29,16 @@ func (sym symbol) symbol_type() ZBAR_CODETYPE {
 }
 
 func (sym symbol) get_rect() (int, int, int, int) {
+	size := sym.get_loc_size()
+	if size <= 0 {
+		return 0, 0, 0, 0
+	}
+
 	x1 := 1000000
 	y1 := 1000000
 	x2 := 0
 	y2 := 0
-	for i := 0; i < sym.get_loc_size(); i++ {
+	for i := 0; i < size; i++ {
 		x := sym.get_loc_x(i)
 		y := sym.get_loc_y(i)
 		if x < x1 {
