@@ -6,7 +6,7 @@ func (pix Pix) EnhancedCopy(opt EnhanceOptions) Pix {
 	var enhanced Pix
 
 	_, _, d := pix.GetDimensions()
-	if d != 8 && d != 32 {
+	if d != 32 {
 		enhanced = pixConvertTo8(pix, 0)
 	} else {
 		enhanced = pixCopy(NullPix, pix)
