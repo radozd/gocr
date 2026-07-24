@@ -240,6 +240,10 @@ func pixConvertRGBToGrayFast(pixs Pix) Pix {
 	return Pix{p: C.pixConvertRGBToGrayFast(pixs.p)}
 }
 
+func pixConvertRGBToGrayMinMax(pixs Pix, mode int) Pix {
+	return Pix{p: C.pixConvertRGBToGrayMinMax(pixs.p, C.l_int32(mode))}
+}
+
 func pixConvertTo8(pixs Pix, cmapflag int) Pix {
 	return Pix{p: C.pixConvertTo8(pixs.p, C.l_int32(cmapflag))}
 }

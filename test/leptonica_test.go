@@ -115,7 +115,7 @@ func TestRemoveBlackBorders(t *testing.T) {
 	}
 	defer pix.Destroy()
 
-	tmp := pix.GetGrayCopy(leptonica.GRAY_CAST_REMOVE_COLORS, leptonica.DefaultGrayOptions)
+	tmp := pix.GetGrayCopy(leptonica.DefaultGrayOptions)
 	defer tmp.Destroy()
 
 	pix1 := tmp.EnhancedCopy(leptonica.DefaultEnhanceOptions)

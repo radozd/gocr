@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"os"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -30,6 +31,8 @@ var paramsEnhance map[string]*int = map[string]*int{
 }
 
 var paramsGray map[string]*int = map[string]*int{
+	"gmode":   &leptonica.DefaultGrayOptions.Mode,
+	"minmax":  &leptonica.DefaultGrayOptions.MinMax,
 	"sat":     &leptonica.DefaultGrayOptions.Saturation,
 	"white2":  &leptonica.DefaultGrayOptions.WhitePoint,
 	"thresh2": &leptonica.DefaultGrayOptions.ThreshDiff,
@@ -51,8 +54,11 @@ var paramsMask map[string]*int = map[string]*int{
 }
 
 func main() {
-	pix := leptonica.NewPixFromFile("__e2abcbf44eb6794003774813e2bae73f.tif") //"test1.tif")
-	//pix := leptonica.NewPixFromFile("test1.tif")
+	name := "gocr_server.tif"
+	if len(os.Args) > 1 {
+		name = os.Args[1]
+	}
+	pix := leptonica.NewPixFromFile(name)
 	defer pix.Destroy()
 
 	originalImage = pix //pix.GetDeskewedCopy(0)
@@ -126,11 +132,11 @@ func serveHTML(w http.ResponseWriter, r *http.Request) {
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Image Adjuster</title>
 		<style>
-			html, body { margin: 0; padding: 0; }
+			html, body { margin: 0; padding: 0; font-size: 0.8em; }
 			body { display: flex; flex-direction: row; background-color: lightgrey; }
-			nav { margin: 1em; position: fixed; background-color: lightgrey; transform-origin: top left; }
+			nav { margin: 0; position: fixed; background-color: lightgrey; transform-origin: top left; }
 			label { width: 5em; display: inline-block; }
-			#image { margin-left: auto; margin-right: auto; max-height: 100vh; width: auto; }
+			#image { margin-left: auto; margin-right: 0; max-height: 100vh; width: auto; }
 		</style>
 
 		<script>
@@ -138,7 +144,7 @@ func serveHTML(w http.ResponseWriter, r *http.Request) {
 
 			function processedUrl() {` +
 		readVals(maps.Keys(paramsEnhance)) + readVals(maps.Keys(paramsGray)) + readVals(maps.Keys(paramsMask)) +
-		`return ` + "`/process?" + query(maps.Keys(paramsEnhance)) + query(maps.Keys(paramsGray)) + query(maps.Keys(paramsMask)) + "`;" +
+		`return ` + "`/process?" + query(maps.Keys(paramsEnhance)) + "&" + query(maps.Keys(paramsGray)) + "&" + query(maps.Keys(paramsMask)) + "`;" +
 		`}
 
 			function updateImage() {
@@ -190,6 +196,8 @@ func serveHTML(w http.ResponseWriter, r *http.Request) {
 			</fieldset>
 			<fieldset>
 				<legend>Gray</legend>` +
+		sliderInt(paramsGray, "gmode", 0, 4) +
+		sliderInt(paramsGray, "minmax", 0, 1) +
 		sliderInt(paramsGray, "sat", 1, 255) +
 		sliderInt(paramsGray, "white2", 1, 254) +
 		sliderInt(paramsGray, "thresh2", 1, 128) +
@@ -240,7 +248,7 @@ func processImage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	getInts := func(params map[string]*int) {
-		for _, n := range maps.Keys(params) {
+		for n := range params {
 			getInt(params, n)
 		}
 	}
@@ -257,7 +265,7 @@ func processImage(w http.ResponseWriter, r *http.Request) {
 	en := tmp.EnhancedCopy(leptonica.DefaultEnhanceOptions)
 	defer en.Destroy()
 
-	gray := en.GetGrayCopy(leptonica.GRAY_CAST_REMOVE_COLORS, leptonica.DefaultGrayOptions)
+	gray := en.GetGrayCopy(leptonica.DefaultGrayOptions)
 	defer gray.Destroy()
 
 	deskew, _ := gray.GetDeskewedCopyAndAngle(0)

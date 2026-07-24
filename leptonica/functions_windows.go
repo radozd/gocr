@@ -49,9 +49,10 @@ var (
 	_pixBackgroundNorm   = leptonicaDll.NewProc("pixBackgroundNorm")
 	_pixThresholdToValue = leptonicaDll.NewProc("pixThresholdToValue")
 
-	_pixConvertRGBToGrayFast = leptonicaDll.NewProc("pixConvertRGBToGrayFast")
-	_pixConvertTo8           = leptonicaDll.NewProc("pixConvertTo8")
-	_pixConvertTo1           = leptonicaDll.NewProc("pixConvertTo1")
+	_pixConvertRGBToGrayFast   = leptonicaDll.NewProc("pixConvertRGBToGrayFast")
+	_pixConvertRGBToGrayMinMax = leptonicaDll.NewProc("pixConvertRGBToGrayMinMax")
+	_pixConvertTo8             = leptonicaDll.NewProc("pixConvertTo8")
+	_pixConvertTo1             = leptonicaDll.NewProc("pixConvertTo1")
 
 	_pixCopy        = leptonicaDll.NewProc("pixCopy")
 	_pixInvert      = leptonicaDll.NewProc("pixInvert")
@@ -322,6 +323,11 @@ func pixThresholdToValue(pixd Pix, pixs Pix, threshval int, setval int) Pix {
 
 func pixConvertRGBToGrayFast(pixs Pix) Pix {
 	p, _, _ := _pixConvertRGBToGrayFast.Call(uintptr(pixs.p))
+	return Pix{p: unsafe.Pointer(p)}
+}
+
+func pixConvertRGBToGrayMinMax(pixs Pix, mode int) Pix {
+	p, _, _ := _pixConvertRGBToGrayMinMax.Call(uintptr(pixs.p), uintptr(C.int32_t(mode)))
 	return Pix{p: unsafe.Pointer(p)}
 }
 

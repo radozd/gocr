@@ -139,16 +139,23 @@ var DefaultEnhanceOptions = EnhanceOptions{
 	RemoveBorders: 180,
 }
 
-type GrayCastMode int
-
 const (
-	GRAY_SIMPLE GrayCastMode = iota
+	GRAY_NONE = iota
+	GRAY_SIMPLE
 	GRAY_CAST_REMOVE_COLORS
 	GRAY_CAST_KEEP_ONLY_COLORS
 	GRAY_CAST_REMOVE_COLORS_2
 )
 
+const (
+	L_CHOOSE_MIN = 1
+	L_CHOOSE_MAX = 2
+)
+
 type GrayOptions struct {
+	Mode   int
+	MinMax int
+
 	Saturation int
 	WhitePoint int
 
@@ -159,6 +166,9 @@ type GrayOptions struct {
 }
 
 var DefaultGrayOptions = GrayOptions{
+	Mode:   GRAY_CAST_REMOVE_COLORS,
+	MinMax: 0,
+
 	Saturation: 150,
 	WhitePoint: 250,
 

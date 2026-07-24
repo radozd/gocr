@@ -55,27 +55,36 @@ func (pix Pix) EnhancedCopy(opt EnhanceOptions) Pix {
 	return enhanced
 }
 
-func (pix Pix) GetGrayCopy(mode GrayCastMode, opt GrayOptions) Pix {
+func (pix Pix) GetGrayCopy(opt GrayOptions) Pix {
+	if opt.Mode == GRAY_NONE {
+		return pixCopy(NullPix, pix)
+	}
+
 	var gray Pix
 
 	_, _, d := pix.GetDimensions()
 	if d == 32 {
-		gray = pixConvertRGBToGrayFast(pix)
+		if opt.MinMax == 0 {
+			gray = pixConvertRGBToGrayFast(pix)
+		} else {
+			gray = pixConvertRGBToGrayMinMax(pix, L_CHOOSE_MAX)
+		}
 		if gray == NullPix {
 			return NullPix
 		}
 
-		if mode != GRAY_SIMPLE {
+		if opt.Mode != GRAY_SIMPLE {
 			var mask Pix
-			if mode == GRAY_CAST_KEEP_ONLY_COLORS {
+			switch opt.Mode {
+			case GRAY_CAST_KEEP_ONLY_COLORS:
 				mask = pixMaskOverGrayPixels(pix, opt.WhitePoint, opt.Saturation)
-			} else if mode == GRAY_CAST_REMOVE_COLORS {
+			case GRAY_CAST_REMOVE_COLORS:
 				mask = pixMaskOverGrayPixels(pix, opt.WhitePoint, opt.Saturation)
 				if mask == NullPix {
 					return gray
 				}
 				pixInvert(mask, mask)
-			} else if mode == GRAY_CAST_REMOVE_COLORS_2 {
+			case GRAY_CAST_REMOVE_COLORS_2:
 				mask = pixMaskOverColorPixels(pix, opt.ThreshDiff, opt.MinDist)
 			}
 
@@ -104,7 +113,7 @@ func (pix Pix) GetGrayCopy(mode GrayCastMode, opt GrayOptions) Pix {
 }
 
 func (pix Pix) GetRawGrayData() []byte {
-	gray := pix.GetGrayCopy(GRAY_CAST_REMOVE_COLORS, DefaultGrayOptions)
+	gray := pix.GetGrayCopy(DefaultGrayOptions)
 	if gray == NullPix {
 		return nil
 	}
