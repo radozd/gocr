@@ -20,7 +20,7 @@ func TestZBar(t *testing.T) {
 	deskew, _ := enhanced.GetDeskewedCopyAndAngle(0)
 	defer deskew.Destroy()
 
-	gray := deskew.GetGrayCopy(leptonica.GRAY_CAST_REMOVE_COLORS, leptonica.DefaultGrayOptions)
+	gray := deskew.GetGrayCopy(leptonica.DefaultGrayOptions)
 
 	scn := zbar.NewScanner()
 	defer scn.Destroy()

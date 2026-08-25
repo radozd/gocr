@@ -207,6 +207,12 @@ func (pix Pix) MaskSpecks(thresh int, max int, weight int) Pix {
 	}
 
 	n := boxaGetCount(boxes)
+	if n > 10000 {
+		boxaDestroy(&boxes)
+		pixDestroy(&mask)
+		return NullPix
+	}
+
 	speck := make([]bool, n)
 	weights := make([]int, n)
 
