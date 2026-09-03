@@ -22,8 +22,7 @@ func TestOcr(t *testing.T) {
 	tess.SetPageSegMode(tesseract.PSM_AUTO_OSD)
 	tess.SetVariable("preserve_interword_spaces", "1")
 
-	tess.SetImagePix(pix)
-	tess.Recognize()
+	tess.Recognize(pix, 0)
 
 	t.Log(tess.GetPageOrientation())
 	//t.Log("\n" + tess.Text())

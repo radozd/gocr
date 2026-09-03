@@ -19,14 +19,13 @@ var (
 	_tessBaseAPIDelete         = tessDll.NewProc("TessBaseAPIDelete")
 	_tessBaseAPIInit2          = tessDll.NewProc("TessBaseAPIInit2")
 	_tessBaseAPISetPageSegMode = tessDll.NewProc("TessBaseAPISetPageSegMode")
-	_tessBaseAPISetImage2      = tessDll.NewProc("TessBaseAPISetImage2")
 
 	/* Utility */
 	_tessBaseAPISetVariable = tessDll.NewProc("TessBaseAPISetVariable")
 	_tessDeleteText         = tessDll.NewProc("TessDeleteText")
 
 	/* Whole text */
-	_tessBaseAPIRecognize   = tessDll.NewProc("TessBaseAPIRecognize")
+	_tessBaseAPIProcessPage = tessDll.NewProc("TessBaseAPIProcessPage")
 	_tessBaseAPIGetUTF8Text = tessDll.NewProc("TessBaseAPIGetUTF8Text")
 	_tessBaseAPIGetHOCRText = tessDll.NewProc("TessBaseAPIGetHOCRText")
 
@@ -93,10 +92,6 @@ func tessBaseAPISetPageSegMode(api Api, mode TessPageSegMode) {
 	_tessBaseAPISetPageSegMode.Call(uintptr(api.handle), uintptr(mode))
 }
 
-func tessBaseAPISetImage2(api Api, pix leptonica.Pix) {
-	_tessBaseAPISetImage2.Call(uintptr(api.handle), leptonica.UnsafePix(pix))
-}
-
 /* Utility */
 func tessBaseAPISetVariable(api Api, name string, value string) bool {
 	cName := C.CString(name)
@@ -114,9 +109,9 @@ func tessDeleteText(text *C.char) {
 }
 
 /* Whole text */
-func tessBaseAPIRecognize(api Api) int {
-	code, _, _ := _tessBaseAPIRecognize.Call(uintptr(api.handle), 0)
-	return int(code)
+func tessBaseAPIProcessPage(api Api, pix leptonica.Pix, timeout int) bool {
+	code, _, _ := _tessBaseAPIProcessPage.Call(uintptr(api.handle), leptonica.UnsafePix(pix), 0, 0, 0, uintptr(timeout), 0)
+	return int(code) != 0
 }
 
 func tessBaseAPIGetUTF8Text(api Api) *C.char {

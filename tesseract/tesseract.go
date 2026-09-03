@@ -39,10 +39,6 @@ func (api Api) SetVariable(name string, value string) {
 	tessBaseAPISetVariable(api, name, value)
 }
 
-func (api Api) SetImagePix(pix leptonica.Pix) {
-	tessBaseAPISetImage2(api, pix)
-}
-
 func (api Api) SetPageSegMode(mode TessPageSegMode) {
 	tessBaseAPISetPageSegMode(api, mode)
 }
@@ -52,8 +48,8 @@ func (api Api) GetIterator() TessResultIterator {
 }
 
 // /////////////////////////////////////
-func (api Api) Recognize() {
-	tessBaseAPIRecognize(api)
+func (api Api) Recognize(pix leptonica.Pix, timeoutMs int) bool {
+	return tessBaseAPIProcessPage(api, pix, timeoutMs)
 }
 
 func (api Api) Text() string {

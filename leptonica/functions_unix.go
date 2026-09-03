@@ -158,15 +158,6 @@ func pixGetWpl(pixs Pix) int {
 	return int(C.pixGetWpl(pixs.p))
 }
 
-func pixCountPixels(pix Pix) int {
-	count := C.int(0)
-	code := int(C.pixCountPixels(pix.p, &count, nil))
-	if code != 0 {
-		return -1
-	}
-	return int(count)
-}
-
 ////////////////////////////////////////////////////
 
 func pixRotate180(pixd Pix, pixs Pix) Pix {

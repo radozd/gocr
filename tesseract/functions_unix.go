@@ -58,10 +58,6 @@ func tessBaseAPISetPageSegMode(api Api, mode TessPageSegMode) {
 	C.TessBaseAPISetPageSegMode(api.handle, C.TessPageSegMode(mode))
 }
 
-func tessBaseAPISetImage2(api Api, pix leptonica.Pix) {
-	C.TessBaseAPISetImage2(api.handle, (*C.PIX)(unsafe.Pointer(leptonica.UnsafePix(pix))))
-}
-
 /* Utility */
 func tessBaseAPISetVariable(api Api, name string, value string) bool {
 	cName := C.CString(name)
@@ -78,8 +74,8 @@ func tessDeleteText(text *C.char) {
 }
 
 /* Whole text */
-func tessBaseAPIRecognize(api Api) int {
-	return int(C.TessBaseAPIRecognize(api.handle, nil))
+func tessBaseAPIProcessPage(api Api, pix leptonica.Pix, timeout int) bool {
+	return C.TessBaseAPIProcessPage(api.handle, (*C.PIX)(unsafe.Pointer(leptonica.UnsafePix(pix))), 0, nil, nil, C.int32_t(timeout), nil) != 0
 }
 
 func tessBaseAPIGetUTF8Text(api Api) *C.char {
