@@ -16,18 +16,19 @@ import (
 var originalImage leptonica.Pix
 
 var paramsEnhance map[string]*int = map[string]*int{
-	"tilex":    &leptonica.DefaultEnhanceOptions.TileX,
-	"tiley":    &leptonica.DefaultEnhanceOptions.TileY,
-	"thresh1":  &leptonica.DefaultEnhanceOptions.Thresh,
-	"minc":     &leptonica.DefaultEnhanceOptions.MinCount,
-	"white1":   &leptonica.DefaultEnhanceOptions.WhitePoint,
-	"smoothx":  &leptonica.DefaultEnhanceOptions.SmoothX,
-	"smoothy":  &leptonica.DefaultEnhanceOptions.SmoothY,
-	"gamma":    &leptonica.DefaultEnhanceOptions.Gamma,
-	"gammamin": &leptonica.DefaultEnhanceOptions.GammaMin,
-	"gammamax": &leptonica.DefaultEnhanceOptions.GammaMax,
-	"factor":   &leptonica.DefaultEnhanceOptions.Factor,
-	"border":   &leptonica.DefaultEnhanceOptions.RemoveBorders,
+	"tilex":     &leptonica.DefaultEnhanceOptions.TileX,
+	"tiley":     &leptonica.DefaultEnhanceOptions.TileY,
+	"thresh1":   &leptonica.DefaultEnhanceOptions.Thresh,
+	"minc":      &leptonica.DefaultEnhanceOptions.MinCount,
+	"white1":    &leptonica.DefaultEnhanceOptions.WhitePoint,
+	"smoothx":   &leptonica.DefaultEnhanceOptions.SmoothX,
+	"smoothy":   &leptonica.DefaultEnhanceOptions.SmoothY,
+	"gamma":     &leptonica.DefaultEnhanceOptions.Gamma,
+	"gammamin":  &leptonica.DefaultEnhanceOptions.GammaMin,
+	"gammamax":  &leptonica.DefaultEnhanceOptions.GammaMax,
+	"factor":    &leptonica.DefaultEnhanceOptions.Contrast,
+	"border":    &leptonica.DefaultEnhanceOptions.RemoveBorders,
+	"normalize": &leptonica.DefaultEnhanceOptions.Normalize,
 }
 
 var paramsGray map[string]*int = map[string]*int{
@@ -192,7 +193,8 @@ func serveHTML(w http.ResponseWriter, r *http.Request) {
 		sliderInt(paramsEnhance, "gammamin", 1, 254) +
 		sliderInt(paramsEnhance, "gammamax", 1, 254) +
 		sliderInt(paramsEnhance, "factor", 0, 100) +
-		sliderInt(paramsEnhance, "border", 1, 255) + `
+		sliderInt(paramsEnhance, "border", 1, 255) +
+		sliderInt(paramsEnhance, "normalize", 0, 1) + `
 			</fieldset>
 			<fieldset>
 				<legend>Gray</legend>` +

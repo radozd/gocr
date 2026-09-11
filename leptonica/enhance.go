@@ -15,15 +15,28 @@ func (pix Pix) EnhancedCopy(opt EnhanceOptions) Pix {
 		return NullPix
 	}
 
-	if opt.TileX > 0 {
-		tmp := pixBackgroundNorm(enhanced, NullPix, NullPix, opt.TileX, opt.TileY,
-			opt.Thresh, opt.MinCount, opt.WhitePoint, opt.SmoothX, opt.SmoothY)
-		enhanced.Destroy()
-
-		if tmp == NullPix {
-			return NullPix
+	if opt.Normalize > 0 {
+		var hist Numa
+		if d == 32 {
+			gray := pixConvertRGBToGrayFast(enhanced)
+			if gray != NullPix {
+				hist = pixGetGrayHistogram(gray, 1)
+				gray.Destroy()
+			}
+		} else {
+			hist = pixGetGrayHistogram(enhanced, 1)
 		}
-		enhanced = tmp
+
+		if hist != NullNuma {
+			defer numaDestroy(&hist)
+
+			p1, ok1 := numaHistogramGetValFromRank(hist, 0.01)
+			p99, ok99 := numaHistogramGetValFromRank(hist, 0.99)
+
+			if ok1 && ok99 {
+				pixGammaTRC(enhanced, enhanced, 1.0, int(p1), int(p99))
+			}
+		}
 	}
 
 	if opt.RemoveBorders > 0 {
@@ -44,12 +57,23 @@ func (pix Pix) EnhancedCopy(opt EnhanceOptions) Pix {
 		pix2.Destroy()
 	}
 
+	if opt.TileX > 0 {
+		tmp := pixBackgroundNorm(enhanced, NullPix, NullPix, opt.TileX, opt.TileY,
+			opt.Thresh, opt.MinCount, opt.WhitePoint, opt.SmoothX, opt.SmoothY)
+		enhanced.Destroy()
+
+		if tmp == NullPix {
+			return NullPix
+		}
+		enhanced = tmp
+	}
+
 	if opt.Gamma > 0 {
 		pixGammaTRC(enhanced, enhanced, float32(opt.Gamma)/100.0, opt.GammaMin, opt.GammaMax)
 	}
 
-	if opt.Factor > 0 {
-		pixContrastTRC(enhanced, enhanced, float32(opt.Factor)/100.0)
+	if opt.Contrast > 0 {
+		pixContrastTRC(enhanced, enhanced, float32(opt.Contrast)/100.0)
 	}
 
 	return enhanced

@@ -22,8 +22,13 @@ type Pixa struct {
 	p *C.PIXA
 }
 
+type Numa struct {
+	p *C.NUMA
+}
+
 var NullPix Pix = Pix{p: nil}
 var NullPixa Pixa = Pixa{p: nil}
+var NullNuma Numa = Numa{p: nil}
 
 func UnsafePix(pix Pix) uintptr {
 	return uintptr(unsafe.Pointer(pix.p))
@@ -45,6 +50,11 @@ func pixDestroy(pix *Pix) {
 func pixaDestroy(pixa *Pixa) {
 	C.pixaDestroy((**C.PIXA)(unsafe.Pointer(&pixa.p)))
 	pixa.p = nil
+}
+
+func numaDestroy(numa *Numa) {
+	C.numaDestroy((**C.NUMA)(unsafe.Pointer(&numa.p)))
+	numa.p = nil
 }
 
 func lept_free(cMem *C.uchar) {
@@ -214,6 +224,19 @@ func pixContrastTRC(pixd Pix, pixs Pix, factor float32) Pix {
 
 func pixGammaTRC(pixd Pix, pixs Pix, gamma float32, minval int, maxval int) Pix {
 	return Pix{p: C.pixGammaTRC(pixd.p, pixs.p, C.l_float32(gamma), C.l_int32(minval), C.l_int32(maxval))}
+}
+
+func pixGetGrayHistogram(pixs Pix, factor int) Numa {
+	return Numa{p: C.pixGetGrayHistogram(pixs.p, C.l_int32(factor))}
+}
+
+func numaHistogramGetValFromRank(numa Numa, rank float32) (float32, bool) {
+	val := C.l_float32(0)
+	code := C.numaHistogramGetValFromRank(numa.p, C.l_float32(rank), &val)
+	if code != 0 {
+		return 0, false
+	}
+	return float32(val), true
 }
 
 func pixBackgroundNorm(pixs Pix, pixim Pix, pixg Pix, sx int, sy int, thresh int, mincount int, bgval int, smoothx int, smoothy int) Pix {

@@ -119,9 +119,10 @@ type EnhanceOptions struct {
 	GammaMin int
 	GammaMax int
 
-	Factor int
+	Contrast int
 
 	RemoveBorders int
+	Normalize     int
 }
 
 var DefaultEnhanceOptions = EnhanceOptions{
@@ -135,8 +136,9 @@ var DefaultEnhanceOptions = EnhanceOptions{
 	Gamma:         50,
 	GammaMin:      20,
 	GammaMax:      240,
-	Factor:        80,
+	Contrast:      80,
 	RemoveBorders: 180,
+	Normalize:     1,
 }
 
 const (

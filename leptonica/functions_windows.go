@@ -16,6 +16,7 @@ var (
 	_setMsgSeverity = leptonicaDll.NewProc("setMsgSeverity")
 	_pixDestroy     = leptonicaDll.NewProc("pixDestroy")
 	_pixaDestroy    = leptonicaDll.NewProc("pixaDestroy")
+	_numaDestroy    = leptonicaDll.NewProc("numaDestroy")
 	_lept_free      = leptonicaDll.NewProc("lept_free")
 
 	_findFileFormat           = leptonicaDll.NewProc("findFileFormat")
@@ -44,10 +45,12 @@ var (
 	_pixSetMasked           = leptonicaDll.NewProc("pixSetMasked")
 	_pixCombineMasked       = leptonicaDll.NewProc("pixCombineMasked")
 
-	_pixContrastTRC      = leptonicaDll.NewProc("pixContrastTRC")
-	_pixGammaTRC         = leptonicaDll.NewProc("pixGammaTRC")
-	_pixBackgroundNorm   = leptonicaDll.NewProc("pixBackgroundNorm")
-	_pixThresholdToValue = leptonicaDll.NewProc("pixThresholdToValue")
+	_pixContrastTRC              = leptonicaDll.NewProc("pixContrastTRC")
+	_pixGammaTRC                 = leptonicaDll.NewProc("pixGammaTRC")
+	_pixGetGrayHistogram         = leptonicaDll.NewProc("pixGetGrayHistogram")
+	_numaHistogramGetValFromRank = leptonicaDll.NewProc("numaHistogramGetValFromRank")
+	_pixBackgroundNorm           = leptonicaDll.NewProc("pixBackgroundNorm")
+	_pixThresholdToValue         = leptonicaDll.NewProc("pixThresholdToValue")
 
 	_pixConvertRGBToGrayFast   = leptonicaDll.NewProc("pixConvertRGBToGrayFast")
 	_pixConvertRGBToGrayMinMax = leptonicaDll.NewProc("pixConvertRGBToGrayMinMax")
@@ -89,8 +92,13 @@ type Pixa struct {
 	p unsafe.Pointer
 }
 
+type Numa struct {
+	p unsafe.Pointer
+}
+
 var NullPix Pix = Pix{p: nil}
 var NullPixa Pixa = Pixa{p: nil}
+var NullNuma Numa = Numa{p: nil}
 
 func UnsafePix(pix Pix) uintptr {
 	return uintptr(pix.p)
@@ -112,6 +120,11 @@ func pixDestroy(pix *Pix) {
 func pixaDestroy(pixa *Pixa) {
 	_pixaDestroy.Call(uintptr(unsafe.Pointer(&pixa.p)))
 	pixa.p = nil
+}
+
+func numaDestroy(numa *Numa) {
+	_numaDestroy.Call(uintptr(unsafe.Pointer(&numa.p)))
+	numa.p = nil
 }
 
 func lept_free(cMem *C.uchar) {
@@ -306,6 +319,24 @@ func pixContrastTRC(pixd Pix, pixs Pix, factor float32) Pix {
 func pixGammaTRC(pixd Pix, pixs Pix, gamma float32, minval int, maxval int) Pix {
 	p, _, _ := _pixGammaTRC.Call(uintptr(pixd.p), uintptr(pixs.p), uintptr(math.Float32bits(gamma)), uintptr(C.int32_t(minval)), uintptr(C.int32_t(maxval)))
 	return Pix{p: unsafe.Pointer(p)}
+}
+
+func pixGetGrayHistogram(pixs Pix, factor int) Numa {
+	p, _, _ := _pixGetGrayHistogram.Call(uintptr(pixs.p), uintptr(C.int32_t(factor)))
+	return Numa{p: unsafe.Pointer(p)}
+}
+
+func numaHistogramGetValFromRank(numa Numa, rank float32) (float32, bool) {
+	val := C.float(0)
+	code, _, _ := _numaHistogramGetValFromRank.Call(
+		uintptr(numa.p),
+		uintptr(math.Float32bits(rank)),
+		uintptr(unsafe.Pointer(&val)),
+	)
+	if code != 0 {
+		return 0, false
+	}
+	return float32(val), true
 }
 
 func pixBackgroundNorm(pixs Pix, pixim Pix, pixg Pix, sx int, sy int, thresh int, mincount int, bgval int, smoothx int, smoothy int) Pix {
