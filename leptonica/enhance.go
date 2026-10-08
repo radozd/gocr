@@ -53,7 +53,7 @@ func (pix Pix) EnhancedCopy(opt EnhanceOptions) Pix {
 		pixXor(pix2, pix2, pix3)
 		pix3.Destroy()
 
-		enhanced.pixSetMasked(pix2, uint(opt.WhitePoint)+256*uint(opt.WhitePoint)+256*256*uint(opt.WhitePoint))
+		enhanced.pixSetMasked(pix2, uint(opt.WhitePoint)<<8|uint(opt.WhitePoint)<<16|uint(opt.WhitePoint)<<24)
 		pix2.Destroy()
 	}
 
