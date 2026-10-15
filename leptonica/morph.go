@@ -118,6 +118,26 @@ func (pix Pix) MaskBars(thresh int, brMin int, brMax int, brWidth int, brHeight 
 	return mask
 }
 
+func (pix Pix) protectCrossings(pixb Pix, strokeW int, strokeH int, nearbyW int, nearbyH int) {
+	strokes := pixOpenBrick(NullPix, pixb, strokeW, strokeH)
+	if strokes == NullPix {
+		return
+	}
+	defer strokes.Destroy()
+
+	outside := pixCopy(NullPix, pix)
+	if outside == NullPix {
+		return
+	}
+	defer outside.Destroy()
+	pixInvert(outside, outside)
+	pixAnd(outside, outside, pixb)
+	pixDilateBrick(outside, outside, nearbyW, nearbyH)
+	pixAnd(strokes, strokes, outside)
+	pixInvert(strokes, strokes)
+	pixAnd(pix, pix, strokes)
+}
+
 func (pix Pix) MaskLines(thresh int, lenMin int) Pix {
 	pixb := pixConvertTo1(pix, 2*thresh)
 	if pixb == NullPix {
@@ -131,6 +151,7 @@ func (pix Pix) MaskLines(thresh int, lenMin int) Pix {
 	}
 
 	pixDilateBrick(brick1, brick1, 1, 3)
+	brick1.protectCrossings(pixb, 1, 5, 1, 15)
 
 	brick2 := pixOpenBrick(NullPix, pixb, 1, lenMin)
 	if brick2 == NullPix {
@@ -140,6 +161,7 @@ func (pix Pix) MaskLines(thresh int, lenMin int) Pix {
 	}
 
 	pixDilateBrick(brick2, brick2, 5, 1)
+	brick2.protectCrossings(pixb, 5, 1, 15, 1)
 	pixb.Destroy()
 
 	pixOr(brick1, brick1, brick2)
