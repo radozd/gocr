@@ -133,11 +133,11 @@ var DefaultEnhanceOptions = EnhanceOptions{
 	WhitePoint:    250,
 	SmoothX:       4,
 	SmoothY:       4,
-	Gamma:         50,
-	GammaMin:      20,
+	Gamma:         0,
+	GammaMin:      40,
 	GammaMax:      240,
 	Contrast:      80,
-	RemoveBorders: 180,
+	RemoveBorders: 80,
 	Normalize:     1,
 }
 
@@ -192,7 +192,8 @@ type MaskOptions struct {
 	BarWidth  int
 	BarHeight int
 
-	LinMin int
+	LinMin           int
+	ProtectCrossings int
 
 	SpMax    int
 	SpWeight int
@@ -210,7 +211,8 @@ var DefaultMaskOptions = MaskOptions{
 	BarWidth:  40,
 	BarHeight: 80,
 
-	LinMin: 59,
+	LinMin:           59,
+	ProtectCrossings: 1,
 
 	SpMax:    10,
 	SpWeight: 180,
