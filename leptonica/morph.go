@@ -118,8 +118,35 @@ func (pix Pix) MaskBars(thresh int, brMin int, brMax int, brWidth int, brHeight 
 	return mask
 }
 
-func (pix Pix) protectCrossings(pixb Pix, strokeW int, strokeH int, nearbyW int, nearbyH int) {
-	strokes := pixOpenBrick(NullPix, pixb, strokeW, strokeH)
+type brickSize struct {
+	w int
+	h int
+}
+
+type crossingParams struct {
+	stroke brickSize
+	touch  brickSize
+	close  brickSize
+	open   brickSize
+	nearby brickSize
+	dx     int
+	dy     int
+}
+
+var verticalCrossings = crossingParams{
+	stroke: brickSize{5, 1}, touch: brickSize{7, 1},
+	close: brickSize{1, 9}, open: brickSize{1, 25},
+	nearby: brickSize{15, 1}, dx: 1,
+}
+
+var horizontalCrossings = crossingParams{
+	stroke: brickSize{1, 5}, touch: brickSize{1, 5},
+	close: brickSize{9, 1}, open: brickSize{25, 1},
+	nearby: brickSize{1, 15}, dy: 1,
+}
+
+func (pix Pix) protectCrossings(pixb Pix, p crossingParams) {
+	strokes := pixOpenBrick(NullPix, pixb, p.stroke.w, p.stroke.h)
 	if strokes == NullPix {
 		return
 	}
@@ -132,13 +159,50 @@ func (pix Pix) protectCrossings(pixb Pix, strokeW int, strokeH int, nearbyW int,
 	defer outside.Destroy()
 	pixInvert(outside, outside)
 	pixAnd(outside, outside, pixb)
-	pixDilateBrick(outside, outside, nearbyW, nearbyH)
-	pixAnd(strokes, strokes, outside)
+
+	nearby := pixCopy(NullPix, outside)
+	if nearby == NullPix {
+		return
+	}
+	defer nearby.Destroy()
+
+	pixDilateBrick(nearby, outside, p.touch.w, p.touch.h)
+
+	touches := pixCopy(NullPix, strokes)
+	if touches == NullPix {
+		return
+	}
+	defer touches.Destroy()
+
+	pixAnd(touches, touches, nearby)
+
+	dense := pixDilateBrick(NullPix, outside, p.close.w, p.close.h)
+	if dense == NullPix {
+		return
+	}
+	defer dense.Destroy()
+
+	pixErodeBrick(dense, dense, p.close.w+p.open.w-1, p.close.h+p.open.h-1)
+	pixDilateBrick(dense, dense, p.open.w+p.nearby.w-1, p.open.h+p.nearby.h-1)
+	pixInvert(dense, dense)
+	pixAnd(touches, touches, dense)
+
+	w, h, _ := pixGetDimensions(pix)
+	radius := max(p.nearby.w, p.nearby.h) / 2
+	for _, sign := range [...]int{-1, 1} {
+		pixRasterop(nearby, 0, 0, w, h, 0, NullPix, 0, 0)
+		for i := 1; i <= radius; i++ {
+			pixRasterop(nearby, sign*i*p.dx, sign*i*p.dy, w, h, 0xE, outside, 0, 0)
+		}
+		pixAnd(strokes, strokes, nearby)
+	}
+
+	pixOr(strokes, strokes, touches)
 	pixInvert(strokes, strokes)
 	pixAnd(pix, pix, strokes)
 }
 
-func (pix Pix) MaskLines(thresh int, lenMin int) Pix {
+func (pix Pix) MaskLines(thresh int, lenMin int, protect int) Pix {
 	pixb := pixConvertTo1(pix, 2*thresh)
 	if pixb == NullPix {
 		return NullPix
@@ -151,7 +215,9 @@ func (pix Pix) MaskLines(thresh int, lenMin int) Pix {
 	}
 
 	pixDilateBrick(brick1, brick1, 1, 3)
-	brick1.protectCrossings(pixb, 1, 5, 1, 15)
+	if protect != 0 {
+		brick1.protectCrossings(pixb, horizontalCrossings)
+	}
 
 	brick2 := pixOpenBrick(NullPix, pixb, 1, lenMin)
 	if brick2 == NullPix {
@@ -161,7 +227,9 @@ func (pix Pix) MaskLines(thresh int, lenMin int) Pix {
 	}
 
 	pixDilateBrick(brick2, brick2, 5, 1)
-	brick2.protectCrossings(pixb, 5, 1, 15, 1)
+	if protect != 0 {
+		brick2.protectCrossings(pixb, verticalCrossings)
+	}
 	pixb.Destroy()
 
 	pixOr(brick1, brick1, brick2)
@@ -356,7 +424,7 @@ func (pix Pix) MaskAll(opt MaskOptions) {
 		//mask2.WriteToFile("b_mask_2.png", IFF_PNG)
 		mask2.Destroy()
 	}
-	mask3 := pix.MaskLines(opt.Thresh, opt.LinMin)
+	mask3 := pix.MaskLines(opt.Thresh, opt.LinMin, opt.ProtectCrossings)
 	if mask3 != NullPix {
 		pix.pixSetMasked(mask3, 0xFFFFFFFF)
 		//mask3.WriteToFile("b_mask_3.png", IFF_PNG)

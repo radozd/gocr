@@ -50,6 +50,7 @@ var paramsMask map[string]*int = map[string]*int{
 	"brwidth":  &leptonica.DefaultMaskOptions.BarWidth,
 	"brheight": &leptonica.DefaultMaskOptions.BarHeight,
 	"lnmin":    &leptonica.DefaultMaskOptions.LinMin,
+	"protect":  &leptonica.DefaultMaskOptions.ProtectCrossings,
 	"spmax":    &leptonica.DefaultMaskOptions.SpMax,
 	"spweight": &leptonica.DefaultMaskOptions.SpWeight,
 }
@@ -216,6 +217,7 @@ func serveHTML(w http.ResponseWriter, r *http.Request) {
 		sliderInt(paramsMask, "brwidth", 20, 80) +
 		sliderInt(paramsMask, "brheight", 20, 80) +
 		sliderInt(paramsMask, "lnmin", 20, 200) +
+		sliderInt(paramsMask, "protect", 0, 1) +
 		sliderInt(paramsMask, "spmax", 2, 20) +
 		sliderInt(paramsMask, "spweight", 1, 200) + `
 			</fieldset>
